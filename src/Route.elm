@@ -5,7 +5,7 @@ import Url.Parser
 
 type Route
     = Top
-    | Detail
+    | Out
 
 parse : Url.Url -> Maybe Route
 parse url =
@@ -15,7 +15,7 @@ routing : Url.Parser.Parser (Route -> a) a
 routing =
     Url.Parser.oneOf
         [ Url.Parser.map Top Url.Parser.top
-        , Url.Parser.map Detail (Url.Parser.s "detail")
+        , Url.Parser.map Out (Url.Parser.s "out")
         ]
 
 

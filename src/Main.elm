@@ -10,7 +10,7 @@ import Url
 import Url.Builder
 
 import Page.Top
-import Page.Detail
+import Page.Out
 
 main : Program () Model Msg
 main =
@@ -31,7 +31,7 @@ type alias Model =
 type Page
     = NotFound
     | Top Page.Top.Model
-    | Detail Page.Detail.Model
+    | Out Page.Out.Model
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
@@ -42,7 +42,7 @@ type Msg
     = UrlRequested Browser.UrlRequest
     | UrlChanged Url.Url
     | TopMsg Page.Top.Msg
-    | DetailMsg Page.Detail.Msg
+    | OutMsg Page.Out.Msg
     | Loaded (Result Http.Error Page)
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -79,15 +79,15 @@ update msg model =
                         )
                 _ ->
                     ( model, Cmd.none )
-        DetailMsg detailMsg ->
+        OutMsg outMsg ->
             case model.page of
-                Detail detailModel ->
+                Out outModel ->
                     let 
                         ( newModel, newCmd ) =
-                            Page.Detail.update detailMsg detailModel
+                            Page.Out.update outMsg outModel
                     in
-                    ( { model | page = Top newModel }
-                    , Cmd.map DetailMsg newCmd
+                    ( { model | page = Out newModel }
+                    , Cmd.map OutMsg newCmd
                     )
                 _ ->
                     ( model, Cmd.none )
@@ -105,13 +105,13 @@ goTo maybeRoute model =
             ( { model | page = Top topModel }
             , Cmd.map TopMsg topCmd
             )
-        Just Route.Detail ->
+        Just Route.Out ->
             let
-                ( detailModel, detailCmd ) =
-                    Page.Detail.init "aaa" 1
+                ( outModel, outCmd ) =
+                    Page.Out.init 
             in
-            ( { model | page = Detail detailModel }
-            , Cmd.map DetailMsg detailCmd
+            ( { model | page = Out outModel }
+            , Cmd.map OutMsg outCmd
             )
 
 subscriptions : Model -> Sub Msg
@@ -124,7 +124,7 @@ view model =
     , body = 
         [ Html.a [Html.Attributes.href "/"] [Html.text "top"]
         , Html.br [] []
-        , Html.a [Html.Attributes.href "/detail"] [Html.text "detail"]
+        , Html.a [Html.Attributes.href "/out"] [Html.text "out"]
         , Html.br [] []
         , case model.page of
             NotFound ->
@@ -132,9 +132,9 @@ view model =
             Top topModel ->
                 Page.Top.view topModel
                     |> Html.map TopMsg
-            Detail detailModel ->
-                Page.Detail.view detailModel
-                    |> Html.map DetailMsg
+            Out outModel ->
+                Page.Out.view outModel
+                    |> Html.map OutMsg
         ]
     }
 
@@ -146,6 +146,6 @@ viewTop : Html.Html msg
 viewTop = 
     Html.text "top"
 
-viewDetail : Html.Html msg
-viewDetail = 
-    Html.text "detail"
+viewOut : Html.Html msg
+viewOut = 
+    Html.text "out"
