@@ -133,10 +133,6 @@ viewAttributes panel atr =
             [ text atr.name ]
         ]
 
-replace : Int -> String -> String -> String
-replace n input name =
-    String.join " " ( replaceLoop n name (String.split " " input) )
-
 setBalance : Model.Balance.Balance -> Panel -> String -> Model.Balance.Balance
 setBalance balance panel value =
     case panel of
@@ -146,23 +142,6 @@ setBalance balance panel value =
         Purpose -> { balance | purposeId = getIntFromString value }
         Place -> { balance | placeId = getIntFromString value }
         Date -> { balance | date = value }
-
-replaceLoop : Int -> String -> List String -> List String
-replaceLoop n name inputList =
-    if n < 0 then
-        inputList
-    else if n == 0 then
-        case inputList of
-            [] ->
-                [name]
-            (x::xs) -> 
-                name :: ( replaceLoop ( n - 1 ) name xs )
-    else
-        case inputList of
-            [] ->
-                "" :: ( replaceLoop ( n - 1 ) name [] )
-            (x::xs) -> 
-                x :: ( replaceLoop ( n - 1 ) name xs )
 
 getPanelView : Model -> Html Msg
 getPanelView model =
