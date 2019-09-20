@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes
 import Html.Events
 import Http 
+import Json.Encode as Encode exposing (..)
 import Json.Decode as Decode exposing (..)
 
 import Model.Balance
@@ -69,7 +70,7 @@ update msg model =
                 Err err ->
                     ( { model | error = "init api error" }, Cmd.none )
         Send ->
-            ( { model | error = "send" }, Cmd.none)
+            ( { model | balance = Model.Balance.init, panel = Amount }, Model.Balance.encode model.balance |> balancePost)
         Receive result ->
             case result of
                 Ok str ->
@@ -92,6 +93,12 @@ view : Model -> Html Msg
 view model =
     div []
         [ br [] []
+        , button 
+            [ Html.Attributes.class "aaaa"
+                , Html.Events.onClick Send 
+            ]
+            [ text "Submit" ]
+        , br [] []
         , text model.error
         , br [] []
         , Model.Balance.htmlMsg model.balance
@@ -116,7 +123,7 @@ getAttributes attribute =
 
 decodeAttributes : Decode.Decoder (List Model.Attribute.Attribute)
 decodeAttributes =
-    list decodeAttribute
+    Decode.list decodeAttribute
 
 decodeAttribute : Decode.Decoder Model.Attribute.Attribute
 decodeAttribute =
@@ -186,16 +193,10 @@ getPanelView model =
             div []
                 [ button 
                     [ Html.Attributes.class "aaaa"
-                    , Html.Events.onClick ( AttributeAction "today" )
+                    , Html.Events.onClick ( AttributeAction "2019/10/3" )
                     ]
-                    [ text "today" ]
+                    [ text "2019/10/3" ]
                 ]
-            --     [ Html.form [ Html.Events.onSubmit AttributeAction model.panel ]
-            --         [ input [ Html.Attributes.value model.input ] []
-            --         , button
-            --         [ Html.Attributes.disabled (String.length model.input < 1) ]
-            --         [ text "Submit" ]
-            --     ]
 
 getNextPanelName : Panel -> Panel
 getNextPanelName p =
@@ -225,5 +226,28 @@ getIntFromString str =
     case maybeInt of
         Nothing -> 0
         Just n -> n
+
+
+-- Send
+
+balancePost : Encode.Value -> Cmd Msg
+-- balancePost = getDomain ++ "/api/v1/balance/" |> post
+balancePost = "http://localhost:8080/api/v1/balance/" |> post
+
+post : String -> Encode.Value -> Cmd Msg
+post url encode =
+    let
+        body = encode |> Http.jsonBody
+    in
+        Http.request
+            { method = "POST"
+            , headers = []
+            , url = url
+            , body = body
+            , expect = Http.expectJson Receive Decode.string
+            , timeout = Nothing
+            , tracker = Nothing
+            }
+
 
 
