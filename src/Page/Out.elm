@@ -217,16 +217,6 @@ getBackPanelName p =
         Place -> Purpose
         Date -> Place
 
-getPanelNumber : Panel -> Int
-getPanelNumber p = 
-    case p of
-        Amount -> 0
-        Item -> 1
-        Kind -> 2
-        Purpose -> 3
-        Place -> 4
-        Date -> 5
-
 getIntFromString : String -> Int
 getIntFromString str =
     let
