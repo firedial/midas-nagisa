@@ -33,14 +33,28 @@ type Msg
     | Send
     | Receive (Result Http.Error String)
     | GetAttributes (Result Http.Error (List Model.Attribute.Attribute))
-    | AttributeAction Panel String
+    | AttributeAction String
     | Panel Direction
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
     case msg of
         Input str ->
-            ( { model | input = str }, Cmd.none )
+            case model.panel of
+                Amount ->
+                    let 
+                        balance = model.balance
+                        newBalance = { balance | amount = getIntFromString str }
+                    in
+                    ( { model | balance = newBalance }, Cmd.none )
+                Item ->
+                    let 
+                        balance = model.balance
+                        newBalance = { balance | item = str }
+                    in
+                    ( { model | balance = newBalance }, Cmd.none )
+                _ ->
+                    ( model, Cmd.none )
         GetAttributes result ->
             case result of
                 Ok list ->
@@ -64,7 +78,7 @@ update msg model =
                     ( { model | error = "err" }, Cmd.none)
         Init ->
             ( { model | error = "init" }, Cmd.none)
-        AttributeAction panel value ->
+        AttributeAction value ->
             ( { model | balance = setBalance model.balance model.panel value, panel = getNextPanelName model.panel }, Cmd.none)
         Panel d ->
             case d of
@@ -77,13 +91,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div []
-        [ Html.form [ Html.Events.onSubmit Send ]
-            [ input [ Html.Attributes.value model.input, Html.Events.onInput Input ] []
-            , button
-                [ Html.Attributes.disabled (String.length model.input < 1) ]
-                [ text "Submit" ]
-            ]
-        , br [] []
+        [ br [] []
         , text model.error
         , br [] []
         , Model.Balance.htmlMsg model.balance
@@ -128,7 +136,7 @@ viewAttributes panel atr =
     li [] 
         [ button 
             [ Html.Attributes.class "aaaa"
-            , Html.Events.onClick ( AttributeAction panel ( String.fromInt atr.id ) )
+            , Html.Events.onClick ( AttributeAction ( String.fromInt atr.id ) )
             ]
             [ text atr.name ]
         ]
@@ -146,6 +154,28 @@ setBalance balance panel value =
 getPanelView : Model -> Html Msg
 getPanelView model =
     case model.panel of
+        Amount ->
+            div []
+                [ Html.form
+                    [ Html.Events.onSubmit <| AttributeAction <| String.fromInt model.balance.amount ]
+                    [ input
+                        [ Html.Attributes.value <| String.fromInt model.balance.amount, Html.Events.onInput Input ]
+                        []
+                    ]
+                    , button [ Html.Attributes.disabled False ]
+                    [ text "Submit" ]
+                ]
+        Item ->
+            div []
+                [ Html.form
+                    [ Html.Events.onSubmit <| AttributeAction model.balance.item ]
+                    [ input
+                        [ Html.Attributes.value model.balance.item, Html.Events.onInput Input ]
+                        []
+                    ]
+                    , button []
+                    [ text "Submit" ]
+                ]
         Kind ->
             ul [] ( List.map ( viewAttributes Kind ) model.kinds )
         Purpose ->
@@ -156,12 +186,10 @@ getPanelView model =
             div []
                 [ button 
                     [ Html.Attributes.class "aaaa"
-                    , Html.Events.onClick ( AttributeAction Date "today" )
+                    , Html.Events.onClick ( AttributeAction "today" )
                     ]
                     [ text "today" ]
                 ]
-        _ ->
-            div [] []
             --     [ Html.form [ Html.Events.onSubmit AttributeAction model.panel ]
             --         [ input [ Html.Attributes.value model.input ] []
             --         , button
