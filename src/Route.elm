@@ -1,7 +1,7 @@
 module Route exposing(Route(..), parse)
 
 import Url
-import Url.Parser
+import Url.Parser exposing (..)
 
 type Route
     = Top
@@ -15,7 +15,7 @@ routing : Url.Parser.Parser (Route -> a) a
 routing =
     Url.Parser.oneOf
         [ Url.Parser.map Top Url.Parser.top
-        , Url.Parser.map Out (Url.Parser.s "out")
+        , Url.Parser.map Out (Url.Parser.s "nagisa" </> Url.Parser.s "out")
         ]
 
 

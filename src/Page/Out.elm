@@ -9,6 +9,7 @@ import Json.Decode as Decode exposing (..)
 
 import Model.Balance
 import Model.Attribute 
+import Config.Env
 
 
 type alias Model =
@@ -116,10 +117,17 @@ view model =
 getAttributes : String -> Cmd Msg
 getAttributes attribute =
     let
-        -- url = getDomain ++ "/api/v1/" ++ attribute ++ "/"
-        url = "http://localhost:8080/api/v1/" ++ attribute ++ "/"
+        url = Config.Env.getApiUrl ++ "/" ++ attribute ++ "/"
     in
-        Http.get { url = url, expect = Http.expectJson GetAttributes decodeAttributes }
+    Http.request
+        { method = "GET"
+        , headers = [ Http.header "Authorization" ( "Bearer " ++ "token" ) ]
+        , url = url
+        , body = Http.emptyBody
+        , expect = Http.expectJson GetAttributes decodeAttributes
+        , timeout = Nothing
+        , tracker = Nothing
+        }
 
 decodeAttributes : Decode.Decoder (List Model.Attribute.Attribute)
 decodeAttributes =
@@ -231,23 +239,22 @@ getIntFromString str =
 -- Send
 
 balancePost : Encode.Value -> Cmd Msg
--- balancePost = getDomain ++ "/api/v1/balance/" |> post
-balancePost = "http://localhost:8080/api/v1/balance/" |> post
+balancePost = Config.Env.getApiUrl ++ "/balance/" |> post
 
 post : String -> Encode.Value -> Cmd Msg
 post url encode =
     let
         body = encode |> Http.jsonBody
     in
-        Http.request
-            { method = "POST"
-            , headers = []
-            , url = url
-            , body = body
-            , expect = Http.expectJson Receive Decode.string
-            , timeout = Nothing
-            , tracker = Nothing
-            }
+    Http.request
+        { method = "POST"
+        , headers = [ Http.header "Authorization" ( "Bearer " ++ "token" ) ]
+        , url = url
+        , body = body
+        , expect = Http.expectJson Receive Decode.string
+        , timeout = Nothing
+        , tracker = Nothing
+        }
 
 
 
