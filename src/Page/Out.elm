@@ -71,13 +71,17 @@ update msg model =
                 Err err ->
                     ( { model | error = "init api error" }, Cmd.none )
         Send ->
-            ( { model | balance = Model.Balance.init, panel = Amount }, Model.Balance.encode model.balance |> balancePost)
+            ( model, Model.Balance.encode model.balance |> balancePost)
         Receive result ->
             case result of
                 Ok str ->
-                    ( { model | error = "ok" }, Cmd.none)
+                    case str of
+                        "OK" ->
+                            ( { model | balance = Model.Balance.init, panel = Amount, error = "" }, Cmd.none)
+                        _ ->
+                            ( { model | error = "Error: " ++ str }, Cmd.none)
                 Err err ->
-                    ( { model | error = "err" }, Cmd.none)
+                    ( { model | error = "post err" }, Cmd.none)
         Init ->
             ( { model | error = "init" }, Cmd.none)
         AttributeAction value ->
