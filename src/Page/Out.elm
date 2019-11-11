@@ -55,6 +55,12 @@ update msg model =
                         newBalance = { balance | item = str }
                     in
                     ( { model | balance = newBalance }, Cmd.none )
+                Date ->
+                    let 
+                        balance = model.balance
+                        newBalance = { balance | date = str }
+                    in
+                    ( { model | balance = newBalance }, Cmd.none )
                 _ ->
                     ( model, Cmd.none )
         GetAttributes result ->
@@ -203,13 +209,16 @@ getPanelView model =
             ul [] ( List.map ( viewAttributes Place ) model.places )
         Date ->
             div []
-                [ button 
-                    [ Html.Attributes.class "aaaa"
-                    , Html.Events.onClick ( AttributeAction "2019/10/3" )
+                [ Html.form
+                    [ Html.Events.onSubmit <| AttributeAction model.balance.date ]
+                    [ input
+                        [ Html.Attributes.value model.balance.date, Html.Events.onInput Input ]
+                        []
                     ]
-                    [ text "2019/10/3" ]
+                    , button []
+                    [ text "Submit" ]
                 ]
-
+ 
 getNextPanelName : Panel -> Panel
 getNextPanelName p =
     case p of
