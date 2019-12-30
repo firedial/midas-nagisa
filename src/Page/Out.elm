@@ -119,7 +119,10 @@ view model =
         , br [] []
         , div [] [ button [ Html.Events.onClick ( Panel Back ) ] [ text "back" ] ]
         , div [] [ button [ Html.Events.onClick ( Panel Next ) ] [ text "next" ] ]
-        , div [] [ getPanelView model ]
+        , div []
+            [ p [] [ text <| getPanelName model.panel ]
+            , getPanelView model 
+            ]
         ]
 
 
@@ -269,5 +272,16 @@ post url encode =
         , tracker = Nothing
         }
 
+-- util
+
+getPanelName : Panel -> String
+getPanelName panel =
+    case panel of
+        Amount -> "Amount"
+        Item -> "Item"
+        Kind -> "Kind"
+        Purpose -> "Purpose"
+        Place -> "Place"
+        Date -> "Date"
 
 
