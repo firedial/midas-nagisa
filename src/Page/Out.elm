@@ -27,7 +27,7 @@ init = ( Model "" "" Model.Balance.init Amount [] [] [], getAttributes "kind" )
 
 type Direction = Back | Next
 
-type Panel = Amount | Item | Kind | Purpose | Place | Date
+type Panel = Amount | Item | Kind | Purpose | Place | Date | Confirm
 
 type Msg
     = Init
@@ -116,11 +116,6 @@ view : Model -> Html Msg
 view model =
     div []
         [ br [] []
-        , button 
-            [ Html.Attributes.class "aaaa"
-                , Html.Events.onClick Send 
-            ]
-            [ text "Submit" ]
         , br [] []
         , text model.error
         , br [] []
@@ -184,12 +179,11 @@ viewAttributes panel atr =
 setBalance : Model.Balance.Balance -> Panel -> String -> Model.Balance.Balance
 setBalance balance panel value =
     case panel of
-        Amount -> { balance | amount = getIntFromString value }
-        Item -> { balance | item = value }
         Kind -> { balance | kindId = getIntFromString value }
         Purpose -> { balance | purposeId = getIntFromString value }
         Place -> { balance | placeId = getIntFromString value }
-        Date -> { balance | date = value }
+        _ -> balance
+
 
 getPanelView : Model -> Html Msg
 getPanelView model =
@@ -233,7 +227,13 @@ getPanelView model =
                     , button []
                     [ text "Submit" ]
                 ]
- 
+        Confirm ->
+            button 
+                [ Html.Attributes.class "aaaa"
+                    , Html.Events.onClick Send 
+                ]
+                [ text "Submit" ]
+
 getNextPanelName : Panel -> Panel
 getNextPanelName p =
     case p of
@@ -242,7 +242,8 @@ getNextPanelName p =
         Kind -> Purpose
         Purpose -> Place
         Place -> Date
-        Date -> Date
+        Date -> Confirm
+        Confirm -> Confirm
 
 getBackPanelName : Panel -> Panel
 getBackPanelName p =
@@ -253,6 +254,7 @@ getBackPanelName p =
         Purpose -> Kind
         Place -> Purpose
         Date -> Place
+        Confirm -> Date
 
 getIntFromString : String -> Int
 getIntFromString str =
@@ -295,5 +297,6 @@ getPanelName panel =
         Purpose -> "Purpose"
         Place -> "Place"
         Date -> "Date"
+        Confirm -> "Confirm"
 
 
