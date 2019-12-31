@@ -75,7 +75,7 @@ update msg model =
                 Amount ->
                     let 
                         balance = model.balance
-                        newBalance = { balance | amount = getIntFromString model.input }
+                        newBalance = { balance | amount = -1 * getIntFromString model.input }
                     in
                     ( { model
                         | balance = newBalance
