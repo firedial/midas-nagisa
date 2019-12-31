@@ -42,27 +42,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
     case msg of
         Input str ->
-            case model.panel of
-                Amount ->
-                    let 
-                        balance = model.balance
-                        newBalance = { balance | amount = getIntFromString str }
-                    in
-                    ( { model | balance = newBalance }, Cmd.none )
-                Item ->
-                    let 
-                        balance = model.balance
-                        newBalance = { balance | item = str }
-                    in
-                    ( { model | balance = newBalance }, Cmd.none )
-                Date ->
-                    let 
-                        balance = model.balance
-                        newBalance = { balance | date = str }
-                    in
-                    ( { model | balance = newBalance }, Cmd.none )
-                _ ->
-                    ( model, Cmd.none )
+            ( { model | input = str }, Cmd.none )
         GetAttributes result ->
             case result of
                 Ok list ->
@@ -91,7 +71,39 @@ update msg model =
         Init ->
             ( { model | error = "init" }, Cmd.none)
         AttributeAction value ->
-            ( { model | balance = setBalance model.balance model.panel value, panel = getNextPanelName model.panel }, Cmd.none)
+            case model.panel of
+                Amount ->
+                    let 
+                        balance = model.balance
+                        newBalance = { balance | amount = getIntFromString model.input }
+                    in
+                    ( { model
+                        | balance = newBalance
+                        , panel = getNextPanelName model.panel 
+                        , input = ""
+                    }, Cmd.none )
+                Item ->
+                    let 
+                        balance = model.balance
+                        newBalance = { balance | item = model.input }
+                    in
+                    ( { model
+                        | balance = newBalance
+                        , panel = getNextPanelName model.panel 
+                        , input = ""
+                    }, Cmd.none )
+                Date ->
+                    let 
+                        balance = model.balance
+                        newBalance = { balance | date = model.input }
+                    in
+                    ( { model
+                        | balance = newBalance
+                        , panel = getNextPanelName model.panel 
+                        , input = ""
+                    }, Cmd.none )
+                _ -> 
+                    ( { model | balance = setBalance model.balance model.panel value, panel = getNextPanelName model.panel }, Cmd.none)
         Panel d ->
             case d of
                 Back -> 
@@ -187,7 +199,7 @@ getPanelView model =
                 [ Html.form
                     [ Html.Events.onSubmit <| AttributeAction <| String.fromInt model.balance.amount ]
                     [ input
-                        [ Html.Attributes.value <| String.fromInt model.balance.amount, Html.Events.onInput Input ]
+                        [ Html.Attributes.value <| model.input, Html.Events.onInput Input ]
                         []
                     ]
                     , button [ Html.Attributes.disabled False ]
@@ -198,7 +210,7 @@ getPanelView model =
                 [ Html.form
                     [ Html.Events.onSubmit <| AttributeAction model.balance.item ]
                     [ input
-                        [ Html.Attributes.value model.balance.item, Html.Events.onInput Input ]
+                        [ Html.Attributes.value model.input, Html.Events.onInput Input ]
                         []
                     ]
                     , button []
@@ -215,7 +227,7 @@ getPanelView model =
                 [ Html.form
                     [ Html.Events.onSubmit <| AttributeAction model.balance.date ]
                     [ input
-                        [ Html.Attributes.value model.balance.date, Html.Events.onInput Input ]
+                        [ Html.Attributes.value model.input, Html.Events.onInput Input ]
                         []
                     ]
                     , button []
