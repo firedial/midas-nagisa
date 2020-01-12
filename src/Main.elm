@@ -120,7 +120,7 @@ subscriptions _ =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "test"
+    { title = "midas"
     , body = 
         [ Html.a [Html.Attributes.href "/nagisa"] [Html.text "top"]
         , Html.br [] []
