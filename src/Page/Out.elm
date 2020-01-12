@@ -116,13 +116,7 @@ view : Model -> Html Msg
 view model =
     div []
         [ br [] []
-        , br [] []
-        , text model.error
-        , br [] []
-        , Model.Balance.htmlMsg model.balance
-        , br [] []
         , text model.input
-        , br [] []
         , br [] []
         , div [] [ button [ Html.Events.onClick ( Panel Back ) ] [ text "back" ] ]
         , div [] [ button [ Html.Events.onClick ( Panel Next ) ] [ text "next" ] ]
@@ -130,6 +124,11 @@ view model =
             [ p [] [ text <| getPanelName model.panel ]
             , getPanelView model 
             ]
+        , br [] []
+        , br [] []
+        , Model.Balance.htmlMsg model.balance
+        , br [] []
+        , text model.error
         ]
 
 
