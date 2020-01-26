@@ -6,6 +6,7 @@ import Url.Parser exposing (..)
 type Route
     = Top
     | Out
+    | Terminal
 
 parse : Url.Url -> Maybe Route
 parse url =
@@ -16,6 +17,7 @@ routing =
     Url.Parser.oneOf
         [ Url.Parser.map Top Url.Parser.top
         , Url.Parser.map Out (Url.Parser.s "nagisa" </> Url.Parser.s "out")
+        , Url.Parser.map Terminal (Url.Parser.s "nagisa" </> Url.Parser.s "terminal")
         ]
 
 
