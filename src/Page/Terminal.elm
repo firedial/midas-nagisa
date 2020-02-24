@@ -27,13 +27,14 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init = ( Model "" "" Model.Balance.init [] [] [], getAttributes "kind" )
 
-type CommandPanel = Out
+type Command = None | Out
 
 type Msg
     = Init
     | Input String
     | Receive (Result Http.Error String)
     | GetAttributes (Result Http.Error (List Model.Attribute.Attribute))
+    | Send
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -65,34 +66,60 @@ update msg model =
                     ( { model | error = "post err" }, Cmd.none)
         Init ->
             ( { model | error = "init" }, Cmd.none)
+        Send ->
+            ( { model | error = "send" }, getCommandSend model)
 
 view : Model -> Html Msg
 view model =
     div []
         [ br [] []
         , div []
-            [ input
-                [ Html.Attributes.value <| model.input, Html.Events.onInput Input ]
-                []
-            ]
+            [ Html.form 
+                [ Html.Events.onSubmit Send ]
+                [ input 
+                    [ Html.Attributes.value <| model.input, Html.Events.onInput Input ]
+                    []
+                , button
+                    []
+                    [ text "Submit" ]
+                ]
+            ] 
         , br [] []
         , text model.input
         , text model.error
-        , getCommandPanel model.input
+        , getCommandPanel model
         ]
 
-getCommandPanel : String -> Html msg
-getCommandPanel str =
+getCommandPanel : Model -> Html msg
+getCommandPanel model = 
     let
-        command = List.head <| String.split " " str
+        command = getCommandName model
+    in
+    case command of
+        None -> div [] [ text "non" ]
+        Out -> View.Terminal.Out.getView model.kinds model.purposes model.places model.input 
+
+getCommandSend : Model -> Cmd Msg
+getCommandSend model =
+    let
+        command = getCommandName model
+    in
+    case command of
+        None -> Cmd.none
+        Out -> View.Terminal.Out.getSendAction model.input 
+
+getCommandName : Model -> Command
+getCommandName model =
+    let
+        command = List.head <| String.split " " model.input
     in
     case command of
         Nothing ->
-            div [] [ text "nothing" ]
+            None
         Just c ->
             case c of
-                "out" -> View.Terminal.Out.getView str
-                _ -> div [] [ text "non" ]
+                "out" -> Out
+                _ -> None
 
 getAttributes : String -> Cmd Msg
 getAttributes attribute =
