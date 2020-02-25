@@ -3,6 +3,9 @@ module View.Terminal.Out exposing (getView, getSendAction)
 import Html exposing (..)
 import Html.Attributes
 import Html.Events
+import Maybe exposing (andThen, withDefault)
+import String exposing (split, toInt)
+import List exposing (head, tail)
 
 import Model.Balance
 import Model.Attribute as Ma
@@ -22,18 +25,24 @@ getView kinds purposes places str =
 getBalanceFromString : Ma.Kinds -> Ma.Purposes -> Ma.Places -> String -> Model.Balance.Balance
 getBalanceFromString kinds purposes places str =
     let
-        strs = String.split " " str
-        amount = maybeStringToInt <| List.head strs
-        amountTail = maybeListStringToListString <| List.tail strs
-        item = maybeStringToString <| List.head amountTail
-        itemTail = maybeListStringToListString <| List.tail amountTail
-        kind = getAttributeId kinds <| maybeStringToString <| List.head itemTail
-        kindTail = maybeListStringToListString <| List.tail itemTail
-        purpose = getAttributeId purposes <| maybeStringToString <| List.head kindTail
-        purposeTail = maybeListStringToListString <| List.tail kindTail
-        place = getAttributeId places <| maybeStringToString <| List.head purposeTail
-        placeTail = maybeListStringToListString <| List.tail purposeTail
-        date = maybeStringToString <| List.head placeTail
+        strs = split " " str
+
+        amount = head strs |> andThen toInt |> withDefault 0
+        amountTail = tail strs |> withDefault []
+
+        item = head amountTail |> withDefault ""
+        itemTail = tail amountTail |> withDefault []
+
+        kind = head itemTail |> withDefault "" |> getAttributeId kinds
+        kindTail = tail itemTail |> withDefault []
+
+        purpose = head kindTail |> withDefault "" |> getAttributeId purposes 
+        purposeTail = tail kindTail |> withDefault []
+
+        place = head purposeTail |> withDefault "" |> getAttributeId places
+        placeTail = tail purposeTail |> withDefault []
+
+        date = head placeTail |> withDefault ""
     in
     Model.Balance.Balance amount item kind purpose place date
 
