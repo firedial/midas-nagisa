@@ -110,16 +110,16 @@ getCommandSend model =
 
 getCommandName : Model -> Command
 getCommandName model =
-    let
-        command = List.head <| String.split " " model.input
-    in
-    case command of
-        Nothing ->
-            None
-        Just c ->
-            case c of
-                "out" -> Out
-                _ -> None
+    String.split " " model.input
+    |> List.head
+    |> Maybe.andThen getCommandType
+    |> Maybe.withDefault None
+
+getCommandType : String -> Maybe Command
+getCommandType s =
+    case s of
+        "out" -> Just Out
+        _ -> Nothing
 
 getAttributes : String -> Cmd Msg
 getAttributes attribute =
