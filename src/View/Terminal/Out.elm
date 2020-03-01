@@ -26,7 +26,7 @@ getBalanceFromString kinds purposes places str =
     let
         strs = split " " str
 
-        amount = head strs |> andThen toInt |> withDefault 0
+        amount = head strs |> andThen toInt |> withDefault 0 |> (*) -1
         amountTail = tail strs |> withDefault []
 
         item = head amountTail |> withDefault ""
