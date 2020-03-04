@@ -32,9 +32,9 @@ type Command = None | Out
 type Msg
     = Init
     | Input String
-    | Receive (Result Http.Error String)
     | GetAttributes (Result Http.Error (List Model.Attribute.Attribute))
     | Send
+    | Outet View.Terminal.Out.Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -54,20 +54,12 @@ update msg model =
                         ( model, Cmd.none )
                 Err err ->
                     ( { model | error = "init api error" }, Cmd.none )
-        Receive result ->
-            case result of
-                Ok str ->
-                    case str of
-                        "OK" ->
-                            ( { model | balance = Model.Balance.init, error = "" }, Cmd.none)
-                        _ ->
-                            ( { model | error = "Error: " ++ str }, Cmd.none)
-                Err err ->
-                    ( { model | error = "post err" }, Cmd.none)
         Init ->
             ( { model | error = "init" }, Cmd.none)
         Send ->
             ( { model | error = "send" }, getCommandSend model)
+        _ ->
+            ( { model | error = "nothing" }, Cmd.none)
 
 view : Model -> Html Msg
 view model =
@@ -106,7 +98,12 @@ getCommandSend model =
     in
     case command of
         None -> Cmd.none
-        Out -> View.Terminal.Out.getSendAction model.input 
+        Out ->
+            let
+                cmd = View.Terminal.Out.getSendAction model.kinds model.purposes model.places model.input 
+            in
+            Cmd.map Outet cmd
+            
 
 getCommandName : Model -> Command
 getCommandName model =

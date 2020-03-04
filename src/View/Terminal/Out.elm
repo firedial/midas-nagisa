@@ -1,17 +1,29 @@
-module View.Terminal.Out exposing (getView, getSendAction)
+module View.Terminal.Out exposing (getView, getSendAction, Msg)
 
 import Html exposing (..)
 import Html.Attributes
 import Html.Events
+import Http exposing (..)
 import Maybe exposing (andThen, withDefault)
 import String exposing (split, join, toInt)
 import List exposing (head, tail, filter, map)
 
 import Model.Balance
 import Model.Attribute as Ma
+import Request.Post 
 
-getSendAction : String -> Cmd msg
-getSendAction s = Cmd.none
+type Msg 
+    = Post Request.Post.Msg
+
+getSendAction : Ma.Kinds -> Ma.Purposes -> Ma.Places -> String -> Cmd Msg
+getSendAction k pr pl s = 
+    let
+        balance = split " " s |> tail |> withDefault [] |> join " " |> getBalanceFromString k pr pl
+        cmd = balance |> Model.Balance.encode |> Request.Post.post "http://localhost:3333/misuzu/api/v1/balance/"
+    in
+    Cmd.map Post cmd
+-- getSendAction : String -> Cmd msg
+-- getSendAction s = Cmd.none
 
 getView : Ma.Kinds -> Ma.Purposes -> Ma.Places -> String -> Html msg
 getView kinds purposes places str =
