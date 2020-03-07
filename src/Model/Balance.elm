@@ -1,4 +1,4 @@
-module Model.Balance exposing (Balance, init, htmlMsg)
+module Model.Balance exposing (Balance, Balances, init, htmlMsg)
 
 import Html exposing (..)
 import Json.Encode as Encode exposing (..)
