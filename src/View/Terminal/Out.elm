@@ -10,16 +10,16 @@ import List exposing (head, tail, filter, map)
 
 import Model.Balance
 import Model.Attribute as Ma
-import Request.Post 
+import Request.Balance 
 
 type Msg 
-    = Post Request.Post.Msg
+    = Post Request.Balance.Msg
 
 getSendAction : Ma.Kinds -> Ma.Purposes -> Ma.Places -> String -> Cmd Msg
 getSendAction k pr pl s = 
     let
         balance = split " " s |> tail |> withDefault [] |> join " " |> getBalanceFromString k pr pl
-        cmd = balance |> Model.Balance.encode |> Request.Post.post "http://localhost:3333/misuzu/api/v1/balance/"
+        cmd = Request.Balance.post balance
     in
     Cmd.map Post cmd
 -- getSendAction : String -> Cmd msg

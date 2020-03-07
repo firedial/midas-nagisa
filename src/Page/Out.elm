@@ -57,7 +57,8 @@ update msg model =
                 Err err ->
                     ( { model | error = "init api error" }, Cmd.none )
         Send ->
-            ( model, Model.Balance.encode model.balance |> balancePost)
+            -- ( model, Model.Balance.encode model.balance |> balancePost)
+            ( model, Cmd.none )
         Receive result ->
             case result of
                 Ok str ->

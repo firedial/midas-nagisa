@@ -1,4 +1,4 @@
-module Model.Balance exposing (Balance, init, encode, htmlMsg)
+module Model.Balance exposing (Balance, init, htmlMsg)
 
 import Html exposing (..)
 import Json.Encode as Encode exposing (..)
@@ -13,6 +13,8 @@ type alias Balance =
     , placeId : Int
     , date : String
     }
+
+type alias Balances = List Balance
 
 htmlMsg : Balance -> Html msg
 htmlMsg balance =
@@ -34,16 +36,6 @@ htmlMsg balance =
 init : Balance
 init = Balance 0 "" 0 0 0 ""
 
-encode : Balance -> Encode.Value
-encode balance =
-    Encode.object
-        [ ("amount", Encode.int balance.amount)
-        , ("item", Encode.string balance.item)
-        , ("kind_id", Encode.int balance.kindId)
-        , ("purpose_id", Encode.int balance.purposeId)
-        , ("place_id", Encode.int balance.placeId)
-        , ("date", Encode.string balance.date)
-        ]
 
 -- decodeBalance : Decode.Decoder Balance
 -- decodeBalance =
