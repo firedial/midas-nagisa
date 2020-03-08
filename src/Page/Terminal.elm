@@ -13,6 +13,7 @@ import Model.Attribute
 import Config.Env
 
 import View.Terminal.Out
+import Repository.AttributeCollection
 
 
 type alias Model =
