@@ -1,7 +1,8 @@
-module Model.Attribute exposing (Attribute, Kinds, Purposes, Places, decodeAttributes, resultAttributes, getAttributeNumber)
+module Model.Attribute exposing (Attribute, Attributes, Kinds, Purposes, Places, decodeAttributes, resultAttributes, getAttributeNumber)
 
 import Json.Decode as Decode exposing (..)
 
+type alias Attributes = List Attribute
 type alias Kinds = List Attribute
 type alias Purposes = List Attribute
 type alias Places = List Attribute
