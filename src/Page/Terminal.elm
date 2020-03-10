@@ -9,58 +9,49 @@ import Json.Decode as Decode exposing (..)
 import String
 
 import Model.Balance
-import Model.Attribute 
+import Model.AttributeCollection
 import Config.Env
 
 import View.Terminal.Out
 import Repository.AttributeCollection
 
-
 type alias Model =
     { input : String
     , error : String
     , balance : Model.Balance.Balance
-    , kinds : List Model.Attribute.Attribute
-    , purposes : List Model.Attribute.Attribute
-    , places : List Model.Attribute.Attribute
+    , acsModel : Repository.AttributeCollection.Model
     }
 
 init : ( Model, Cmd Msg )
-init = ( Model "" "" Model.Balance.init [] [] [], getAttributes "kind" )
+init = 
+    let
+        ( model, cmd ) = Repository.AttributeCollection.init
+    in
+    ( Model "" "" Model.Balance.init model, Cmd.map GetAttributeCollection cmd )
 
 type Command = None | Out
 
 type Msg
-    = Init
+    = Send
     | Input String
-    | GetAttributes (Result Http.Error (List Model.Attribute.Attribute))
-    | Send
     | Outet View.Terminal.Out.Msg
+    | GetAttributeCollection Repository.AttributeCollection.Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
     case msg of
         Input str ->
             ( { model | input = str }, Cmd.none )
-        GetAttributes result ->
-            case result of
-                Ok list ->
-                    if model.kinds == [] then
-                        ( { model | kinds = list }, getAttributes "purpose" )
-                    else if model.purposes == [] then
-                        ( { model | purposes = list }, getAttributes "place" )
-                    else if model.places == [] then
-                        ( { model | places = list }, Cmd.none)
-                    else
-                        ( model, Cmd.none )
-                Err err ->
-                    ( { model | error = "init api error" }, Cmd.none )
-        Init ->
-            ( { model | error = "init" }, Cmd.none)
         Send ->
             ( { model | error = "send" }, getCommandSend model)
-        _ ->
+        Outet t ->
             ( { model | error = "nothing" }, Cmd.none)
+        GetAttributeCollection msg_ ->
+            let
+                ( attributeCollectionModel, _ ) = Repository.AttributeCollection.update msg_ model.acsModel
+            in
+            ( { model | acsModel = attributeCollectionModel }, Cmd.none)
+            
 
 view : Model -> Html Msg
 view model =
@@ -90,7 +81,7 @@ getCommandPanel model =
     in
     case command of
         None -> div [] [ text "non" ]
-        Out -> View.Terminal.Out.getView model.kinds model.purposes model.places model.input 
+        Out -> View.Terminal.Out.getView model.acsModel model.input 
 
 getCommandSend : Model -> Cmd Msg
 getCommandSend model =
@@ -101,7 +92,7 @@ getCommandSend model =
         None -> Cmd.none
         Out ->
             let
-                cmd = View.Terminal.Out.getSendAction model.kinds model.purposes model.places model.input 
+                cmd = View.Terminal.Out.getSendAction model.acsModel model.input 
             in
             Cmd.map Outet cmd
             
@@ -119,30 +110,4 @@ getCommandType s =
         "out" -> Just Out
         _ -> Nothing
 
-getAttributes : String -> Cmd Msg
-getAttributes attribute =
-    let
-        url = Config.Env.getApiUrl ++ "/" ++ attribute ++ "/"
-    in
-    Http.request
-        { method = "GET"
-        , headers = [ Http.header "Authorization" ( "Bearer " ++ "token" ) ]
-        , url = url
-        , body = Http.emptyBody
-        , expect = Http.expectJson GetAttributes decodeAttributes
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-decodeAttributes : Decode.Decoder (List Model.Attribute.Attribute)
-decodeAttributes =
-    Decode.list decodeAttribute
-
-decodeAttribute : Decode.Decoder Model.Attribute.Attribute
-decodeAttribute =
-    Decode.map4 Model.Attribute.Attribute
-        (field "id" Decode.int)
-        (field "name" Decode.string)
-        (field "description" Decode.string)
-        (field "group_id" Decode.int)
 

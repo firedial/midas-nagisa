@@ -11,31 +11,35 @@ import List exposing (head, tail, filter, map)
 import Model.Balance
 import Model.Attribute as Ma
 import Request.Balance 
+import Repository.AttributeCollection
 
 type Msg 
     = Post Request.Balance.Msg
 
-getSendAction : Ma.Kinds -> Ma.Purposes -> Ma.Places -> String -> Cmd Msg
-getSendAction k pr pl s = 
+getSendAction : Repository.AttributeCollection.Model -> String -> Cmd Msg
+getSendAction acs s = 
     let
-        balance = split " " s |> tail |> withDefault [] |> join " " |> getBalanceFromString k pr pl
+        balance = split " " s |> tail |> withDefault [] |> join " " |> getBalanceFromString acs 
         cmd = Request.Balance.post balance
     in
     Cmd.map Post cmd
 -- getSendAction : String -> Cmd msg
 -- getSendAction s = Cmd.none
 
-getView : Ma.Kinds -> Ma.Purposes -> Ma.Places -> String -> Html msg
-getView kinds purposes places str =
+getView : Repository.AttributeCollection.Model -> String -> Html msg
+getView acs str =
     let
-        balance = split " " str |> tail |> withDefault [] |> join " " |> getBalanceFromString kinds purposes places
+        balance = split " " str |> tail |> withDefault [] |> join " " |> getBalanceFromString acs
     in
     -- div [] [ text balanceString ]
     Model.Balance.htmlMsg balance
 
-getBalanceFromString : Ma.Kinds -> Ma.Purposes -> Ma.Places -> String -> Model.Balance.Balance
-getBalanceFromString kinds purposes places str =
+getBalanceFromString : Repository.AttributeCollection.Model -> String -> Model.Balance.Balance
+getBalanceFromString acs str =
     let
+        kinds = acs.kindAttributeModel.attributes
+        purposes = acs.purposeAttributeModel.attributes
+        places = acs.placeAttributeModel.attributes
         strs = split " " str
 
         amount = head strs |> andThen toInt |> withDefault 0 |> (*) -1
