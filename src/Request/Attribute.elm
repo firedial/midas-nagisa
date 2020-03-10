@@ -18,7 +18,7 @@ init : String -> ( Model, Cmd Msg )
 init attribute = 
     ( Model "" [], getAttributes attribute )
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
     case msg of
         GetAttributes result ->
