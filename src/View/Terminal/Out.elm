@@ -1,4 +1,4 @@
-module View.Terminal.Out exposing (getView, getSendAction, Msg)
+module View.Terminal.Out exposing (view, getSendAction, Msg)
 
 import Html exposing (..)
 import Html.Attributes
@@ -10,24 +10,24 @@ import List exposing (head, tail, filter, map)
 
 import Model.Balance
 import Model.Attribute as Ma
-import Request.Balance 
+import Request.PostBalance 
 import Repository.AttributeCollection
 
 type Msg 
-    = Post Request.Balance.Msg
+    = OutPost Request.PostBalance.Msg
 
 getSendAction : Repository.AttributeCollection.Model -> String -> Cmd Msg
 getSendAction acs s = 
     let
         balance = split " " s |> tail |> withDefault [] |> join " " |> getBalanceFromString acs 
-        cmd = Request.Balance.post balance
+        cmd = Request.PostBalance.post balance
     in
-    Cmd.map Post cmd
+    Cmd.map OutPost cmd
 -- getSendAction : String -> Cmd msg
 -- getSendAction s = Cmd.none
 
-getView : Repository.AttributeCollection.Model -> String -> Html msg
-getView acs str =
+view : Repository.AttributeCollection.Model -> String -> Html msg
+view acs str =
     let
         balance = split " " str |> tail |> withDefault [] |> join " " |> getBalanceFromString acs
     in

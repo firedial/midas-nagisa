@@ -36,6 +36,7 @@ type Msg
     | Input String
     | Outet View.Terminal.Out.Msg
     | GetAttributeCollection Repository.AttributeCollection.Msg
+    | OutPost View.Terminal.Out.Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -45,6 +46,8 @@ update msg model =
         Send ->
             ( { model | error = "send" }, getCommandSend model)
         Outet t ->
+            ( { model | error = "nothing" }, Cmd.none)
+        OutPost result ->
             ( { model | error = "nothing" }, Cmd.none)
         GetAttributeCollection msg_ ->
             let
@@ -81,7 +84,7 @@ getCommandPanel model =
     in
     case command of
         None -> div [] [ text "non" ]
-        Out -> View.Terminal.Out.getView model.acsModel model.input 
+        Out -> View.Terminal.Out.view model.acsModel model.input 
 
 getCommandSend : Model -> Cmd Msg
 getCommandSend model =
