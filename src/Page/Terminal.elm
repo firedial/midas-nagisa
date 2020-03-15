@@ -13,6 +13,7 @@ import Model.AttributeCollection
 import Config.Env
 
 import View.Terminal.Out
+import View.Terminal.Move
 import Repository.AttributeCollection
 
 type alias Model =
@@ -21,23 +22,26 @@ type alias Model =
     , balance : Model.Balance.Balance
     , acsModel : Repository.AttributeCollection.Model
     , outModel : View.Terminal.Out.Model
+    , moveModel : View.Terminal.Move.Model
     }
 
 init : ( Model, Cmd Msg )
 init = 
     let
         ( outModel, _ ) = View.Terminal.Out.init
+        ( moveModel, _ ) = View.Terminal.Move.init
         ( acsModel, cmd ) = Repository.AttributeCollection.init
     in
-    ( Model "" "" Model.Balance.init acsModel outModel, Cmd.map GetAttributeCollection cmd )
+    ( Model "" "" Model.Balance.init acsModel outModel moveModel, Cmd.map GetAttributeCollection cmd )
 
-type Command = None | Out
+type Command = None | Out | Move
 
 type Msg
     = Send
     | Input String
     | GetAttributeCollection Repository.AttributeCollection.Msg
     | OutMsg View.Terminal.Out.Msg
+    | MoveMsg View.Terminal.Move.Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -52,6 +56,12 @@ update msg model =
                 input = if outModel.result.msg == "OK" then "" else model.input
             in
             ( { model | outModel = outModel, input = input }, Cmd.none)
+        MoveMsg msg_ ->
+            let
+                ( moveModel, _ ) = View.Terminal.Move.update msg_ model.moveModel
+                input = if moveModel.result.msg == "OK" then "" else model.input
+            in
+            ( { model | moveModel = moveModel, input = input }, Cmd.none)
         GetAttributeCollection msg_ ->
             let
                 ( attributeCollectionModel, _ ) = Repository.AttributeCollection.update msg_ model.acsModel
@@ -87,6 +97,7 @@ getCommandPanel model =
     case command of
         None -> div [] [ text "non" ]
         Out -> View.Terminal.Out.view model.outModel model.acsModel model.input 
+        Move -> View.Terminal.Move.view model.moveModel model.acsModel model.input 
 
 getCommandSend : Model -> Cmd Msg
 getCommandSend model =
@@ -100,6 +111,11 @@ getCommandSend model =
                 cmd = View.Terminal.Out.getSendAction model.acsModel model.input 
             in
             Cmd.map OutMsg cmd
+        Move ->
+            let
+                cmd = View.Terminal.Move.getSendAction model.acsModel model.input 
+            in
+            Cmd.map MoveMsg cmd
             
 
 getCommandName : Model -> Command
@@ -113,6 +129,7 @@ getCommandType : String -> Maybe Command
 getCommandType s =
     case s of
         "out" -> Just Out
+        "move" -> Just Move
         _ -> Nothing
 
 
