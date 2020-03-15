@@ -20,23 +20,24 @@ type alias Model =
     , error : String
     , balance : Model.Balance.Balance
     , acsModel : Repository.AttributeCollection.Model
+    , outModel : View.Terminal.Out.Model
     }
 
 init : ( Model, Cmd Msg )
 init = 
     let
-        ( model, cmd ) = Repository.AttributeCollection.init
+        ( outModel, _ ) = View.Terminal.Out.init
+        ( acsModel, cmd ) = Repository.AttributeCollection.init
     in
-    ( Model "" "" Model.Balance.init model, Cmd.map GetAttributeCollection cmd )
+    ( Model "" "" Model.Balance.init acsModel outModel, Cmd.map GetAttributeCollection cmd )
 
 type Command = None | Out
 
 type Msg
     = Send
     | Input String
-    | Outet View.Terminal.Out.Msg
     | GetAttributeCollection Repository.AttributeCollection.Msg
-    | OutPost View.Terminal.Out.Msg
+    | OutMsg View.Terminal.Out.Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -45,10 +46,11 @@ update msg model =
             ( { model | input = str }, Cmd.none )
         Send ->
             ( { model | error = "send" }, getCommandSend model)
-        Outet t ->
-            ( { model | error = "nothing" }, Cmd.none)
-        OutPost result ->
-            ( { model | error = "nothing" }, Cmd.none)
+        OutMsg msg_ ->
+            let
+                ( outModel, _ ) = View.Terminal.Out.update msg_ model.outModel
+            in
+            ( { model | outModel = outModel }, Cmd.none)
         GetAttributeCollection msg_ ->
             let
                 ( attributeCollectionModel, _ ) = Repository.AttributeCollection.update msg_ model.acsModel
@@ -84,7 +86,7 @@ getCommandPanel model =
     in
     case command of
         None -> div [] [ text "non" ]
-        Out -> View.Terminal.Out.view model.acsModel model.input 
+        Out -> View.Terminal.Out.view model.outModel model.acsModel model.input 
 
 getCommandSend : Model -> Cmd Msg
 getCommandSend model =
@@ -97,7 +99,7 @@ getCommandSend model =
             let
                 cmd = View.Terminal.Out.getSendAction model.acsModel model.input 
             in
-            Cmd.map Outet cmd
+            Cmd.map OutMsg cmd
             
 
 getCommandName : Model -> Command

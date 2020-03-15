@@ -1,13 +1,31 @@
-module Request.PostBalance exposing (post, Msg)
+module Request.PostBalance exposing (post, Msg, Model, init, update)
 
 import Http exposing (..)
 import Json.Decode as Decode exposing (..)
 import Json.Encode as Encode exposing (..)
 
 import Model.Balance
+import Request.Util
+
+type alias Model =
+    { msg : String
+    }
 
 type Msg 
     = Receive (Result Http.Error String)
+
+init : ( Model, Cmd Msg )
+init = ( Model "", Cmd.none )
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        Receive result ->
+            case result of
+                Ok msg_ ->
+                    ( { model | msg = msg_ }, Cmd.none )
+                Err err ->
+                    ( { model | msg = Request.Util.getErrMsg err }, Cmd.none )
 
 post : Model.Balance.Balance -> Cmd Msg
 post balance =
