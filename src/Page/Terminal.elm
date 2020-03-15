@@ -49,8 +49,9 @@ update msg model =
         OutMsg msg_ ->
             let
                 ( outModel, _ ) = View.Terminal.Out.update msg_ model.outModel
+                input = if outModel.result.msg == "OK" then "" else model.input
             in
-            ( { model | outModel = outModel }, Cmd.none)
+            ( { model | outModel = outModel, input = input }, Cmd.none)
         GetAttributeCollection msg_ ->
             let
                 ( attributeCollectionModel, _ ) = Repository.AttributeCollection.update msg_ model.acsModel
@@ -74,9 +75,8 @@ view model =
                 ]
             ] 
         , br [] []
-        , text model.input
-        , text model.error
-        , getCommandPanel model
+        , div [] [ text model.input ]
+        , div [] [ getCommandPanel model ]
         ]
 
 getCommandPanel : Model -> Html msg
