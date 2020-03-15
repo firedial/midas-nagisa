@@ -6,7 +6,7 @@ import Json.Encode as Encode exposing (..)
 import Model.Attribute as Attribute
 
 type alias Move =
-    { attributeName : String
+    { attribute : String
     , amount : Int
     , beforeId : Int
     , afterId : Int
@@ -16,7 +16,7 @@ type alias Move =
 htmlMsg : Move -> Html msg
 htmlMsg move =
     div[]
-        [ text <| (++) "attributeName: " move.attributeName
+        [ text <| (++) "attribute: " move.attribute
         , br [] []
         , text <| (++) "amount: " <| String.fromInt move.amount
         , br [] []
