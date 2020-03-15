@@ -42,7 +42,7 @@ post move =
 encode : Model.Move.Move -> Encode.Value
 encode move =
     Encode.object
-        [ ("attribute", Encode.int move.attribute)
+        [ ("attribute", Encode.string move.attribute)
         , ("amount", Encode.int move.amount)
         , ("before_id", Encode.int move.beforeId)
         , ("after_id", Encode.int move.afterId)
