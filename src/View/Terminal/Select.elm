@@ -48,7 +48,31 @@ getSelectAction =
 view : Model -> Html msg
 view model =
     div [] 
-        [ ul []
-            (List.map (\l -> li [] [ text "s" ]) model.getBalanceModel.balances)
+        [ table []
+            ([ tr []
+                [ th [] [ text "balance_id" ]
+                , th [] [ text "amount" ]
+                , th [] [ text "item" ]
+                , th [] [ text "kind_id" ]
+                , th [] [ text "purpose_id" ]
+                , th [] [ text "place_id" ]
+                , th [] [ text "date" ]
+                ]
+            ]
+            ++
+            (List.map getRow model.getBalanceModel.balances)
+            )
+        ]
+
+getRow : Model.Balance.Balance -> Html msg
+getRow balance =
+    tr []
+        [ td [] [ text <| String.fromInt balance.balanceId ]
+        , td [] [ text <| String.fromInt balance.amount ]
+        , td [] [ text balance.item ]
+        , td [] [ text <| String.fromInt balance.kindId ]
+        , td [] [ text <| String.fromInt balance.purposeId ]
+        , td [] [ text <| String.fromInt balance.placeId ]
+        , td [] [ text balance.date ]
         ]
 
