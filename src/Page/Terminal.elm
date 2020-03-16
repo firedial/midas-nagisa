@@ -54,14 +54,16 @@ update msg model =
             let
                 ( outModel, _ ) = View.Terminal.Out.update msg_ model.outModel
                 input = if outModel.result.msg == "OK" then "" else model.input
+                error = outModel.result.msg
             in
-            ( { model | outModel = outModel, input = input }, Cmd.none)
+            ( { model | outModel = outModel, input = input, error = error }, Cmd.none)
         MoveMsg msg_ ->
             let
                 ( moveModel, _ ) = View.Terminal.Move.update msg_ model.moveModel
                 input = if moveModel.result.msg == "OK" then "" else model.input
+                error = moveModel.result.msg
             in
-            ( { model | moveModel = moveModel, input = input }, Cmd.none)
+            ( { model | moveModel = moveModel, input = input, error = error }, Cmd.none)
         GetAttributeCollection msg_ ->
             let
                 ( attributeCollectionModel, _ ) = Repository.AttributeCollection.update msg_ model.acsModel
@@ -85,6 +87,7 @@ view model =
                 ]
             ] 
         , br [] []
+        , div [] [ text model.error ]
         , div [] [ text model.input ]
         , div [] [ getCommandPanel model ]
         ]

@@ -53,8 +53,7 @@ view model acs str =
     in
     -- div [] [ text balanceString ]
     div [] 
-        [ div [] [ text model.result.msg ]
-        , div [] [ Model.Balance.htmlMsg balance ]
+        [ div [] [ Model.Balance.htmlMsg balance ]
         ]
 
 getBalanceFromString : Repository.AttributeCollection.Model -> String -> Model.Balance.Balance

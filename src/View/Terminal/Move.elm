@@ -53,8 +53,7 @@ view model acs str =
     in
     -- div [] [ text balanceString ]
     div [] 
-        [ div [] [ text model.result.msg ]
-        , div [] [ Model.Move.htmlMsg move ]
+        [ div [] [ Model.Move.htmlMsg move ]
         ]
 
 getMoveFromString : Repository.AttributeCollection.Model -> String -> Model.Move.Move
