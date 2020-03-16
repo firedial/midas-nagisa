@@ -111,7 +111,7 @@ getCommandPanel model =
         None -> div [] [ text "non" ]
         Out -> View.Terminal.Out.view model.outModel model.acsModel model.input 
         Move -> View.Terminal.Move.view model.moveModel model.acsModel model.input 
-        Select -> View.Terminal.Select.view model.selectModel model.acsModel model.input 
+        Select -> View.Terminal.Select.view model.selectModel 
 
 getCommandSend : Model -> Cmd Msg
 getCommandSend model =
@@ -132,7 +132,7 @@ getCommandSend model =
             Cmd.map MoveMsg cmd
         Select ->
             let
-                cmd = View.Terminal.Select.getSendAction model.acsModel model.input 
+                cmd = View.Terminal.Select.getSelectAction
             in
             Cmd.map SelectMsg cmd
             
