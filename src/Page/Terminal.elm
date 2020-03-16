@@ -132,7 +132,7 @@ getCommandSend model =
             Cmd.map MoveMsg cmd
         Select ->
             let
-                cmd = View.Terminal.Select.getSelectAction
+                cmd = View.Terminal.Select.getSelectAction model.input
             in
             Cmd.map SelectMsg cmd
             

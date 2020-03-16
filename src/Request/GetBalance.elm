@@ -25,12 +25,12 @@ update msg model =
 init : ( Model, Cmd Msg )
 init = ( Model [], Cmd.none )
 
-get : Cmd Msg
-get =
+get : String -> Cmd Msg
+get query =
     Http.request
         { method = "GET"
         , headers = [ Http.header "Authorization" ( "Bearer " ++ "token" ) ]
-        , url = getGetUrl
+        , url = getGetUrl ++ "?" ++ query
         , body = Http.emptyBody
         , expect = Http.expectJson GetBalances decodeBalances
         , timeout = Nothing

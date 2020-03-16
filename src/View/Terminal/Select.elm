@@ -36,10 +36,11 @@ update msg model =
             in
             ( { model | getBalanceModel = getBalanceModel }, Cmd.none )
 
-getSelectAction : Cmd Msg
-getSelectAction = 
+getSelectAction : String -> Cmd Msg
+getSelectAction str = 
     let
-        cmd = Request.GetBalance.get
+        query = getQuery str
+        cmd = Request.GetBalance.get query
     in
     Cmd.map GetBalance cmd
 -- getSendAction : String -> Cmd msg
@@ -47,8 +48,12 @@ getSelectAction =
 
 view : Model -> Html msg
 view model =
+    let
+        sum = List.map (\balance -> balance.amount) model.getBalanceModel.balances |> List.sum
+    in
     div [] 
-        [ table []
+        [ span [] [ text <| "sum: " ++ (String.fromInt sum) ]
+        , table []
             ([ tr []
                 [ th [] [ text "balance_id" ]
                 , th [] [ text "amount" ]
@@ -75,4 +80,22 @@ getRow balance =
         , td [] [ text <| String.fromInt balance.placeId ]
         , td [] [ text balance.date ]
         ]
+
+getQuery : String -> String
+getQuery str =
+    let
+        strs = split " " str |> tail |> withDefault []
+    in
+    join "&" <| createQuery strs
+
+createQuery : List String -> List String
+createQuery strs =
+    let
+        key = head strs |> withDefault ""
+        value = tail strs |> andThen head |> withDefault ""
+        next = tail strs |> andThen tail |> withDefault []
+    in
+    if key == "" then [] else [(key ++ "=" ++ value)] ++ createQuery next
+
+
 
