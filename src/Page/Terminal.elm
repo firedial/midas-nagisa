@@ -14,6 +14,7 @@ import Config.Env
 
 import View.Terminal.Out
 import View.Terminal.Move
+import View.Terminal.Select
 import Repository.AttributeCollection
 
 type alias Model =
@@ -23,6 +24,7 @@ type alias Model =
     , acsModel : Repository.AttributeCollection.Model
     , outModel : View.Terminal.Out.Model
     , moveModel : View.Terminal.Move.Model
+    , selectModel : View.Terminal.Select.Model
     }
 
 init : ( Model, Cmd Msg )
@@ -30,11 +32,12 @@ init =
     let
         ( outModel, _ ) = View.Terminal.Out.init
         ( moveModel, _ ) = View.Terminal.Move.init
+        ( selectModel, _ ) = View.Terminal.Select.init
         ( acsModel, cmd ) = Repository.AttributeCollection.init
     in
-    ( Model "" "" Model.Balance.init acsModel outModel moveModel, Cmd.map GetAttributeCollection cmd )
+    ( Model "" "" Model.Balance.init acsModel outModel moveModel selectModel, Cmd.map GetAttributeCollection cmd )
 
-type Command = None | Out | Move
+type Command = None | Out | Move | Select
 
 type Msg
     = Send
@@ -42,6 +45,7 @@ type Msg
     | GetAttributeCollection Repository.AttributeCollection.Msg
     | OutMsg View.Terminal.Out.Msg
     | MoveMsg View.Terminal.Move.Msg
+    | SelectMsg View.Terminal.Select.Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -64,6 +68,12 @@ update msg model =
                 error = moveModel.result.msg
             in
             ( { model | moveModel = moveModel, input = input, error = error }, Cmd.none)
+        SelectMsg msg_ ->
+            let
+                ( selectModel, _ ) = View.Terminal.Select.update msg_ model.selectModel
+                error = ""
+            in
+            ( { model | selectModel = selectModel, error = error }, Cmd.none)
         GetAttributeCollection msg_ ->
             let
                 ( attributeCollectionModel, _ ) = Repository.AttributeCollection.update msg_ model.acsModel
@@ -101,6 +111,7 @@ getCommandPanel model =
         None -> div [] [ text "non" ]
         Out -> View.Terminal.Out.view model.outModel model.acsModel model.input 
         Move -> View.Terminal.Move.view model.moveModel model.acsModel model.input 
+        Select -> View.Terminal.Select.view model.selectModel model.acsModel model.input 
 
 getCommandSend : Model -> Cmd Msg
 getCommandSend model =
@@ -119,6 +130,11 @@ getCommandSend model =
                 cmd = View.Terminal.Move.getSendAction model.acsModel model.input 
             in
             Cmd.map MoveMsg cmd
+        Select ->
+            let
+                cmd = View.Terminal.Select.getSendAction model.acsModel model.input 
+            in
+            Cmd.map SelectMsg cmd
             
 
 getCommandName : Model -> Command
@@ -133,6 +149,7 @@ getCommandType s =
     case s of
         "out" -> Just Out
         "move" -> Just Move
+        "select" -> Just Select
         _ -> Nothing
 
 
