@@ -43,7 +43,8 @@ decodeBalances =
 
 decodeBalance : Decode.Decoder Model.Balance.Balance
 decodeBalance =
-    Decode.map6 Model.Balance.Balance
+    Decode.map7 Model.Balance.Balance
+        (field "balance_id" Decode.int)
         (field "amount" Decode.int)
         (field "item" Decode.string)
         (field "kind_id" Decode.int)

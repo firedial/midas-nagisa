@@ -81,7 +81,7 @@ getBalanceFromString acs str =
 
         date = head placeTail |> withDefault ""
     in
-    Model.Balance.Balance amount item kind purpose place date
+    Model.Balance.Balance 0 amount item kind purpose place date
 
 getAttributeId : List Ma.Attribute -> String -> Int
 getAttributeId attributes str =

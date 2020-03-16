@@ -6,7 +6,8 @@ import Json.Encode as Encode exposing (..)
 import Model.Attribute as Attribute
 
 type alias Balance =
-    { amount : Int
+    { balanceId : Int
+    , amount : Int
     , item : String
     , kindId : Int
     , purposeId : Int
@@ -34,7 +35,7 @@ htmlMsg balance =
         ]
 
 init : Balance
-init = Balance 0 "" 0 0 0 ""
+init = Balance 0 0 "" 0 0 0 ""
 
 
 -- decodeBalance : Decode.Decoder Balance
