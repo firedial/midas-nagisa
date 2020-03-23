@@ -15,6 +15,7 @@ import Config.Env
 import View.Terminal.Out
 import View.Terminal.Move
 import View.Terminal.Select
+import View.Terminal.Sum
 import Repository.AttributeCollection
 
 type alias Model =
@@ -25,6 +26,7 @@ type alias Model =
     , outModel : View.Terminal.Out.Model
     , moveModel : View.Terminal.Move.Model
     , selectModel : View.Terminal.Select.Model
+    , sumModel : View.Terminal.Sum.Model
     }
 
 init : ( Model, Cmd Msg )
@@ -33,11 +35,12 @@ init =
         ( outModel, _ ) = View.Terminal.Out.init
         ( moveModel, _ ) = View.Terminal.Move.init
         ( selectModel, _ ) = View.Terminal.Select.init
+        ( sumModel, _ ) = View.Terminal.Sum.init
         ( acsModel, cmd ) = Repository.AttributeCollection.init
     in
-    ( Model "" "" Model.Balance.init acsModel outModel moveModel selectModel, Cmd.map GetAttributeCollection cmd )
+    ( Model "" "" Model.Balance.init acsModel outModel moveModel selectModel sumModel, Cmd.map GetAttributeCollection cmd )
 
-type Command = None | Out | Move | Select
+type Command = None | Out | Move | Select | Sum
 
 type Msg
     = Send
@@ -46,6 +49,7 @@ type Msg
     | OutMsg View.Terminal.Out.Msg
     | MoveMsg View.Terminal.Move.Msg
     | SelectMsg View.Terminal.Select.Msg
+    | SumMsg View.Terminal.Sum.Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -74,6 +78,12 @@ update msg model =
                 error = ""
             in
             ( { model | selectModel = selectModel, error = error }, Cmd.none)
+        SumMsg msg_ ->
+            let
+                ( sumModel, _ ) = View.Terminal.Sum.update msg_ model.sumModel
+                error = ""
+            in
+            ( { model | sumModel = sumModel, error = error }, Cmd.none)
         GetAttributeCollection msg_ ->
             let
                 ( attributeCollectionModel, _ ) = Repository.AttributeCollection.update msg_ model.acsModel
@@ -112,6 +122,7 @@ getCommandPanel model =
         Out -> View.Terminal.Out.view model.outModel model.acsModel model.input 
         Move -> View.Terminal.Move.view model.moveModel model.acsModel model.input 
         Select -> View.Terminal.Select.view model.selectModel 
+        Sum -> View.Terminal.Sum.view model.sumModel 
 
 getCommandSend : Model -> Cmd Msg
 getCommandSend model =
@@ -135,6 +146,11 @@ getCommandSend model =
                 cmd = View.Terminal.Select.getSelectAction model.input
             in
             Cmd.map SelectMsg cmd
+        Sum ->
+            let
+                cmd = View.Terminal.Sum.getSelectAction model.input
+            in
+            Cmd.map SumMsg cmd
             
 
 getCommandName : Model -> Command
@@ -150,6 +166,7 @@ getCommandType s =
         "out" -> Just Out
         "move" -> Just Move
         "select" -> Just Select
+        "sum" -> Just Sum
         _ -> Nothing
 
 
