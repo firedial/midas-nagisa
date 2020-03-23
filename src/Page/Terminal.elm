@@ -16,6 +16,7 @@ import View.Terminal.Out
 import View.Terminal.Move
 import View.Terminal.Select
 import View.Terminal.Sum
+import View.Terminal.Salary
 import Repository.AttributeCollection
 
 type alias Model =
@@ -27,6 +28,7 @@ type alias Model =
     , moveModel : View.Terminal.Move.Model
     , selectModel : View.Terminal.Select.Model
     , sumModel : View.Terminal.Sum.Model
+    , salaryModel : View.Terminal.Salary.Model
     }
 
 init : ( Model, Cmd Msg )
@@ -36,11 +38,12 @@ init =
         ( moveModel, _ ) = View.Terminal.Move.init
         ( selectModel, _ ) = View.Terminal.Select.init
         ( sumModel, _ ) = View.Terminal.Sum.init
+        ( salaryModel, _ ) = View.Terminal.Salary.init
         ( acsModel, cmd ) = Repository.AttributeCollection.init
     in
-    ( Model "" "" Model.Balance.init acsModel outModel moveModel selectModel sumModel, Cmd.map GetAttributeCollection cmd )
+    ( Model "" "" Model.Balance.init acsModel outModel moveModel selectModel sumModel salaryModel, Cmd.map GetAttributeCollection cmd )
 
-type Command = None | Out | Move | Select | Sum
+type Command = None | Out | Move | Select | Sum | Salary
 
 type Msg
     = Send
@@ -50,6 +53,7 @@ type Msg
     | MoveMsg View.Terminal.Move.Msg
     | SelectMsg View.Terminal.Select.Msg
     | SumMsg View.Terminal.Sum.Msg
+    | SalaryMsg View.Terminal.Salary.Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -84,6 +88,12 @@ update msg model =
                 error = ""
             in
             ( { model | sumModel = sumModel, error = error }, Cmd.none)
+        SalaryMsg msg_ ->
+            let
+                ( salaryModel, _ ) = View.Terminal.Salary.update msg_ model.salaryModel
+                error = ""
+            in
+            ( { model | salaryModel = salaryModel, error = error }, Cmd.none)
         GetAttributeCollection msg_ ->
             let
                 ( attributeCollectionModel, _ ) = Repository.AttributeCollection.update msg_ model.acsModel
@@ -123,6 +133,7 @@ getCommandPanel model =
         Move -> View.Terminal.Move.view model.moveModel model.acsModel model.input 
         Select -> View.Terminal.Select.view model.selectModel 
         Sum -> View.Terminal.Sum.view model.sumModel 
+        Salary -> View.Terminal.Salary.view model.salaryModel model.acsModel model.input 
 
 getCommandSend : Model -> Cmd Msg
 getCommandSend model =
@@ -151,6 +162,11 @@ getCommandSend model =
                 cmd = View.Terminal.Sum.getSelectAction model.input
             in
             Cmd.map SumMsg cmd
+        Salary ->
+            let
+                cmd = View.Terminal.Salary.getSendAction model.acsModel model.input
+            in
+            Cmd.map SalaryMsg cmd
             
 
 getCommandName : Model -> Command
@@ -167,6 +183,7 @@ getCommandType s =
         "move" -> Just Move
         "select" -> Just Select
         "sum" -> Just Sum
+        "salary" -> Just Salary
         _ -> Nothing
 
 
