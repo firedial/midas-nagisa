@@ -28,19 +28,19 @@ type alias Model =
     }
 
 type Msg 
-    = OutPost Request.PostBalance.Msg
+    = Salary Request.PostBalance.Msg
 
 init : ( Model, Cmd Msg )
 init = 
     let
         ( model, cmd ) = Request.PostBalance.init
     in
-    ( Model model 0 0 0 0 0 0 0 0 0 0, Cmd.map OutPost cmd )
+    ( Model model 0 0 0 0 0 0 0 0 0 0, Cmd.map Salary cmd )
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        OutPost msg_ ->
+        Salary msg_ ->
             let
                 ( result, _ ) = Request.PostBalance.update msg_ model.result
             in
@@ -48,7 +48,7 @@ update msg model =
 
 getSendAction : Repository.AttributeCollection.Model -> String -> Cmd Msg
 getSendAction acs s = 
-    Cmd.map OutPost Cmd.none
+    Cmd.map Salary Cmd.none
 -- getSendAction : String -> Cmd msg
 -- getSendAction s = Cmd.none
 
