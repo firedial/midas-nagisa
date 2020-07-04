@@ -32,7 +32,7 @@ init =
     let
         ( acsModel, cmd ) = Repository.AttributeCollection.init
     in
-    ( Model None acsModel "" , Cmd.none )
+    ( Model None acsModel "" , Cmd.map GetAttributeCollection cmd )
 
 type Msg
     = Send
