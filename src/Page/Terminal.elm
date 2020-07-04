@@ -46,9 +46,9 @@ update msg model =
     case msg of
         Input str ->
             let
-                ( outModel, _ ) = View.Terminal.Out.init
+                cmd = getCommand str
             in
-            ( { model | input = str, command = Out outModel }, Cmd.none )
+            ( { model | input = str, command = cmd }, Cmd.none )
         Send ->
             ( model, Cmd.none )
         OutMsg msg_ ->
@@ -100,3 +100,23 @@ view model =
                 View.Terminal.Move.view moveModel model.acsModel model.input |> Html.map MoveMsg
         ]
 
+getCommand : String -> Command
+getCommand str =
+    let
+        cmd = String.split " " str |> List.head
+    in
+    case cmd of
+        Just cmd_ ->
+            case cmd_ of
+                "out" -> 
+                    let
+                        ( model, _ ) = View.Terminal.Out.init
+                    in
+                    Out model
+                "move" -> 
+                    let
+                        ( model, _ ) = View.Terminal.Move.init
+                    in
+                    Move model
+                _ -> None
+        Nothing -> None
