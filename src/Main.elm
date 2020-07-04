@@ -10,7 +10,6 @@ import Url
 import Url.Builder
 
 import Page.Top
-import Page.Out
 import Page.Terminal
 
 main : Program () Model Msg
@@ -32,7 +31,6 @@ type alias Model =
 type Page
     = NotFound
     | Top Page.Top.Model
-    | Out Page.Out.Model
     | Terminal Page.Terminal.Model
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
@@ -44,7 +42,6 @@ type Msg
     = UrlRequested Browser.UrlRequest
     | UrlChanged Url.Url
     | TopMsg Page.Top.Msg
-    | OutMsg Page.Out.Msg
     | TerminalMsg Page.Terminal.Msg
     | Loaded (Result Http.Error Page)
 
@@ -82,18 +79,6 @@ update msg model =
                         )
                 _ ->
                     ( model, Cmd.none )
-        OutMsg outMsg ->
-            case model.page of
-                Out outModel ->
-                    let 
-                        ( newModel, newCmd ) =
-                            Page.Out.update outMsg outModel
-                    in
-                    ( { model | page = Out newModel }
-                    , Cmd.map OutMsg newCmd
-                    )
-                _ ->
-                    ( model, Cmd.none )
         TerminalMsg terminalMsg ->
             case model.page of
                 Terminal terminalModel ->
@@ -120,14 +105,6 @@ goTo maybeRoute model =
             ( { model | page = Top topModel }
             , Cmd.map TopMsg topCmd
             )
-        Just Route.Out ->
-            let
-                ( outModel, outCmd ) =
-                    Page.Out.init 
-            in
-            ( { model | page = Out outModel }
-            , Cmd.map OutMsg outCmd
-            )
         Just Route.Terminal ->
             let
                 ( terminalModel, terminalCmd ) =
@@ -147,8 +124,6 @@ view model =
     , body = 
         [ Html.a [Html.Attributes.href "/nagisa"] [Html.text "top"]
         , Html.br [] []
-        , Html.a [Html.Attributes.href "/nagisa/out"] [Html.text "out"]
-        , Html.br [] []
         , Html.a [Html.Attributes.href "/nagisa/terminal"] [Html.text "terminal"]
         , Html.br [] []
         , case model.page of
@@ -157,9 +132,6 @@ view model =
             Top topModel ->
                 Page.Top.view topModel
                     |> Html.map TopMsg
-            Out outModel ->
-                Page.Out.view outModel
-                    |> Html.map OutMsg
             Terminal terminalModel ->
                 Page.Terminal.view terminalModel
                     |> Html.map TerminalMsg
@@ -173,10 +145,6 @@ viewNotFound =
 viewTop : Html.Html msg
 viewTop = 
     Html.text "top"
-
-viewOut : Html.Html msg
-viewOut = 
-    Html.text "out"
 
 viewTerminal : Html.Html msg
 viewTerminal = 
