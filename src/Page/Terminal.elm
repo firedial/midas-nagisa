@@ -6,40 +6,45 @@ import Html.Events
 import Http 
 import Json.Encode as Encode exposing (..)
 import Json.Decode as Decode exposing (..)
-import String
+import Maybe exposing (andThen, withDefault)
+import String exposing (split, join, toInt)
+import List exposing (head, tail, filter, map)
+
 
 import Model.Balance
 import Model.AttributeCollection
 import Config.Env
 
+import Request.PostBalance 
 import View.Terminal.Out
 import View.Terminal.Move
 import Repository.AttributeCollection
+import Request.Util
 
 type alias Model =
     { command : Command
     , acsModel : Repository.AttributeCollection.Model
     , input : String
+    , error : String
     }
 
 type Command
     = None
-    | Out View.Terminal.Out.Model
-    | Move View.Terminal.Move.Model
+    | Out
+    | Move
 
 init : ( Model, Cmd Msg )
 init = 
     let
         ( acsModel, cmd ) = Repository.AttributeCollection.init
     in
-    ( Model None acsModel "" , Cmd.map GetAttributeCollection cmd )
+    ( Model None acsModel "" "" , Cmd.map GetAttributeCollection cmd )
 
 type Msg
     = Send
     | Input String
     | GetAttributeCollection Repository.AttributeCollection.Msg
-    | OutMsg View.Terminal.Out.Msg
-    | MoveMsg View.Terminal.Move.Msg
+    | Recieve (Result Http.Error String)
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -50,30 +55,25 @@ update msg model =
             in
             ( { model | input = str, command = cmd }, Cmd.none )
         Send ->
-            ( model, Cmd.none )
-        OutMsg msg_ ->
             case model.command of
-                Out outModel ->
+                Out ->
                     let
-                        ( newModel, newCmd ) = View.Terminal.Out.update msg_ outModel
+                        balance = split " " model.input |> tail |> withDefault [] |> join " " |> View.Terminal.Out.getBalanceFromString model.acsModel
+                        cmd = postBalance balance
                     in
-                    ( { model | command = Out newModel }, Cmd.map OutMsg newCmd)
-                _ ->
-                    ( model, Cmd.none )
-        MoveMsg msg_ ->
-            case model.command of
-                Move moveModel ->
-                    let
-                        ( newModel, newCmd ) = View.Terminal.Move.update msg_ moveModel
-                    in
-                    ( { model | command = Out newModel }, Cmd.map MoveMsg newCmd)
-                _ ->
-                    ( model, Cmd.none )
+                    ( model, cmd )
+                _ -> ( model, Cmd.none )
         GetAttributeCollection msg_ ->
             let
                 ( attributeCollectionModel, _ ) = Repository.AttributeCollection.update msg_ model.acsModel
             in
             ( { model | acsModel = attributeCollectionModel }, Cmd.none)
+        Recieve result ->
+            case result of
+                Ok msg_ ->
+                    ( { model | input = "", error = msg_ }, Cmd.none )
+                Err err ->
+                    ( { model | error = Request.Util.getErrMsg err }, Cmd.none )
 
 view : Model -> Html Msg
 view model =
@@ -90,14 +90,15 @@ view model =
                     [ text "Submit" ]
                 ]
             ] 
-        , br [] []
+        , br [] [ ]
+        , Html.text model.error
         , case model.command of
             None ->
                 Html.text "none"
-            Out outModel ->
-                View.Terminal.Out.view outModel model.acsModel model.input |> Html.map OutMsg
-            Move moveModel ->
-                View.Terminal.Move.view moveModel model.acsModel model.input |> Html.map MoveMsg
+            Out ->
+                View.Terminal.Out.view model.acsModel model.input
+            Move ->
+                View.Terminal.Out.view model.acsModel model.input
         ]
 
 getCommand : String -> Command
@@ -108,15 +109,35 @@ getCommand str =
     case cmd of
         Just cmd_ ->
             case cmd_ of
-                "out" -> 
-                    let
-                        ( model, _ ) = View.Terminal.Out.init
-                    in
-                    Out model
-                "move" -> 
-                    let
-                        ( model, _ ) = View.Terminal.Move.init
-                    in
-                    Move model
+                "out" -> Out
+                "move" -> Move
                 _ -> None
         Nothing -> None
+
+postBalance : Model.Balance.Balance -> Cmd Msg
+postBalance balance =
+    Http.request
+        { method = "POST"
+        , headers = []
+        , url = getPostUrl
+        , body = encode balance |> Http.jsonBody
+        , expect = Http.expectJson Recieve Decode.string
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+encode : Model.Balance.Balance -> Encode.Value
+encode balance =
+    Encode.object
+        [ ("amount", Encode.int balance.amount)
+        , ("item", Encode.string balance.item)
+        , ("kind_id", Encode.int balance.kindId)
+        , ("purpose_id", Encode.int balance.purposeId)
+        , ("place_id", Encode.int balance.placeId)
+        , ("date", Encode.string balance.date)
+        ]
+
+getPostUrl : String
+getPostUrl = "http://localhost:3333/misuzu/api/v1/balance/"
+ 
+ 

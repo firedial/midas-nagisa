@@ -1,4 +1,4 @@
-module View.Terminal.Out exposing (view, getSendAction, Msg, init, update, Model)
+module View.Terminal.Out exposing (view, getBalanceFromString)
 
 import Html exposing (..)
 import Html.Attributes
@@ -13,41 +13,8 @@ import Model.Attribute as Ma
 import Request.PostBalance 
 import Repository.AttributeCollection
 
-type alias Model =
-    { result : Request.PostBalance.Model
-    }
-
-type Msg 
-    = OutPost Request.PostBalance.Msg
-
-init : ( Model, Cmd Msg )
-init = 
-    let
-        ( model, cmd ) = Request.PostBalance.init
-    in
-    ( Model model, Cmd.map OutPost cmd )
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        OutPost msg_ ->
-            let
-                ( result, _ ) = Request.PostBalance.update msg_ model.result
-            in
-            ( { model | result = result }, Cmd.none )
-
-getSendAction : Repository.AttributeCollection.Model -> String -> Cmd Msg
-getSendAction acs s = 
-    let
-        balance = split " " s |> tail |> withDefault [] |> join " " |> getBalanceFromString acs 
-        cmd = Request.PostBalance.post balance
-    in
-    Cmd.map OutPost cmd
--- getSendAction : String -> Cmd msg
--- getSendAction s = Cmd.none
-
-view : Model -> Repository.AttributeCollection.Model -> String -> Html msg
-view model acs str =
+view : Repository.AttributeCollection.Model -> String -> Html msg
+view acs str =
     let
         balance = split " " str |> tail |> withDefault [] |> join " " |> getBalanceFromString acs
     in
