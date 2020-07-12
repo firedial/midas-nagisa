@@ -16,7 +16,6 @@ import Model.Move
 import Model.AttributeCollection
 import Config.Env
 
-import Request.PostBalance 
 import View.Terminal.Out
 import View.Terminal.Move
 import Repository.AttributeCollection

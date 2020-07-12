@@ -9,7 +9,6 @@ import String exposing (split, join, toInt)
 import List exposing (head, tail, filter, map)
 
 import Model.Move
-import Request.PostMove
 import Model.Attribute as Ma
 import Repository.AttributeCollection
 

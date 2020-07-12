@@ -10,7 +10,6 @@ import List exposing (head, tail, filter, map)
 
 import Model.Balance
 import Model.Attribute as Ma
-import Request.PostBalance 
 import Repository.AttributeCollection
 
 view : Repository.AttributeCollection.Model -> String -> Html msg
