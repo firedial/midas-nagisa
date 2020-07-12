@@ -119,15 +119,15 @@ postBalance balance =
     Http.request
         { method = "POST"
         , headers = []
-        , url = getPostUrl
-        , body = encode balance |> Http.jsonBody
+        , url = getPostBalanceUrl
+        , body = encodeBalance balance |> Http.jsonBody
         , expect = Http.expectJson Recieve Decode.string
         , timeout = Nothing
         , tracker = Nothing
         }
 
-encode : Model.Balance.Balance -> Encode.Value
-encode balance =
+encodeBalance : Model.Balance.Balance -> Encode.Value
+encodeBalance balance =
     Encode.object
         [ ("amount", Encode.int balance.amount)
         , ("item", Encode.string balance.item)
@@ -137,7 +137,7 @@ encode balance =
         , ("date", Encode.string balance.date)
         ]
 
-getPostUrl : String
-getPostUrl = "http://localhost:3333/misuzu/api/v1/balance/"
+getPostBalanceUrl : String
+getPostBalanceUrl = "http://localhost:3333/misuzu/api/v1/balance/"
  
  
