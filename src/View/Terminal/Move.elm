@@ -1,4 +1,4 @@
-module View.Terminal.Move exposing (view, getSendAction, Msg, init, update, Model, getMoveFromString)
+module View.Terminal.Move exposing (view, getMoveFromString)
 
 import Html exposing (..)
 import Html.Attributes
@@ -12,39 +12,6 @@ import Model.Move
 import Request.PostMove
 import Model.Attribute as Ma
 import Repository.AttributeCollection
-
-type alias Model =
-    { result : Request.PostMove.Model
-    }
-
-type Msg 
-    = MovePost Request.PostMove.Msg
-
-init : ( Model, Cmd Msg )
-init = 
-    let
-        ( model, cmd ) = Request.PostMove.init
-    in
-    ( Model model, Cmd.map MovePost cmd )
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        MovePost msg_ ->
-            let
-                ( result, _ ) = Request.PostMove.update msg_ model.result
-            in
-            ( { model | result = result }, Cmd.none )
-
-getSendAction : Repository.AttributeCollection.Model -> String -> Cmd Msg
-getSendAction acs s = 
-    let
-        move = split " " s |> tail |> withDefault [] |> join " " |> getMoveFromString acs 
-        cmd = Request.PostMove.post move 
-    in
-    Cmd.map MovePost cmd
--- getSendAction : String -> Cmd msg
--- getSendAction s = Cmd.none
 
 view :  Repository.AttributeCollection.Model -> String -> Html msg
 view acs str =
