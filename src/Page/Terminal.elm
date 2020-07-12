@@ -12,6 +12,7 @@ import List exposing (head, tail, filter, map)
 
 
 import Model.Balance
+import Model.Move
 import Model.AttributeCollection
 import Config.Env
 
@@ -44,7 +45,7 @@ type Msg
     = Send
     | Input String
     | GetAttributeCollection Repository.AttributeCollection.Msg
-    | Recieve (Result Http.Error String)
+    | Receive (Result Http.Error String)
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -62,13 +63,19 @@ update msg model =
                         cmd = postBalance balance
                     in
                     ( model, cmd )
+                Move ->
+                    let
+                        move = split " " model.input |> tail |> withDefault [] |> join " " |> View.Terminal.Move.getMoveFromString model.acsModel
+                        cmd = postMove move 
+                    in
+                    ( model, cmd )
                 _ -> ( model, Cmd.none )
         GetAttributeCollection msg_ ->
             let
                 ( attributeCollectionModel, _ ) = Repository.AttributeCollection.update msg_ model.acsModel
             in
             ( { model | acsModel = attributeCollectionModel }, Cmd.none)
-        Recieve result ->
+        Receive result ->
             case result of
                 Ok msg_ ->
                     ( { model | input = "", error = msg_ }, Cmd.none )
@@ -98,7 +105,7 @@ view model =
             Out ->
                 View.Terminal.Out.view model.acsModel model.input
             Move ->
-                View.Terminal.Out.view model.acsModel model.input
+                View.Terminal.Move.view model.acsModel model.input
         ]
 
 getCommand : String -> Command
@@ -121,7 +128,7 @@ postBalance balance =
         , headers = []
         , url = Config.Env.getApiUrl ++ "/balance/"
         , body = encodeBalance balance |> Http.jsonBody
-        , expect = Http.expectJson Recieve Decode.string
+        , expect = Http.expectJson Receive Decode.string
         , timeout = Nothing
         , tracker = Nothing
         }
@@ -137,4 +144,24 @@ encodeBalance balance =
         , ("date", Encode.string balance.date)
         ]
 
- 
+postMove : Model.Move.Move -> Cmd Msg
+postMove move =
+    Http.request
+        { method = "POST"
+        , headers = []
+        , url = Config.Env.getApiUrl ++ "/move/"
+        , body = encodeMove move |> Http.jsonBody
+        , expect = Http.expectJson Receive Decode.string
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+encodeMove : Model.Move.Move -> Encode.Value
+encodeMove move =
+    Encode.object
+        [ ("attribute", Encode.string move.attribute)
+        , ("amount", Encode.int move.amount)
+        , ("before_id", Encode.int move.beforeId)
+        , ("after_id", Encode.int move.afterId)
+        , ("date", Encode.string move.date)
+        ]

@@ -1,4 +1,4 @@
-module View.Terminal.Move exposing (view, getSendAction, Msg, init, update, Model)
+module View.Terminal.Move exposing (view, getSendAction, Msg, init, update, Model, getMoveFromString)
 
 import Html exposing (..)
 import Html.Attributes
@@ -46,8 +46,8 @@ getSendAction acs s =
 -- getSendAction : String -> Cmd msg
 -- getSendAction s = Cmd.none
 
-view : Model -> Repository.AttributeCollection.Model -> String -> Html msg
-view model acs str =
+view :  Repository.AttributeCollection.Model -> String -> Html msg
+view acs str =
     let
         move = split " " str |> tail |> withDefault [] |> join " " |> getMoveFromString acs
     in
