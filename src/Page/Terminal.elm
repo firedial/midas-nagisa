@@ -119,7 +119,7 @@ postBalance balance =
     Http.request
         { method = "POST"
         , headers = []
-        , url = getPostBalanceUrl
+        , url = Config.Env.getApiUrl ++ "/balance/"
         , body = encodeBalance balance |> Http.jsonBody
         , expect = Http.expectJson Recieve Decode.string
         , timeout = Nothing
@@ -137,7 +137,4 @@ encodeBalance balance =
         , ("date", Encode.string balance.date)
         ]
 
-getPostBalanceUrl : String
-getPostBalanceUrl = "http://localhost:3333/misuzu/api/v1/balance/"
- 
  
