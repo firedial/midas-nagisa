@@ -14,8 +14,7 @@ parse url =
 routing : Url.Parser.Parser (Route -> a) a
 routing =
     Url.Parser.oneOf
-        [ Url.Parser.map Top Url.Parser.top
-        , Url.Parser.map Terminal (Url.Parser.s "nagisa" </> Url.Parser.s "terminal")
+        [ Url.Parser.map Terminal (Url.Parser.s "nagisa" </> Url.Parser.s "index.html")
         ]
 
 
