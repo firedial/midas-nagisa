@@ -74,7 +74,10 @@ getAttributeId attributes str =
 
 showAttributes : List Ma.Attribute -> Html msg
 showAttributes attributes =
-    div [] ( map (\a -> div [] [ text a.name ]) attributes )
+    let
+        predictiveList = List.take 8 attributes
+    in
+    div [] ( map (\a -> div [] [ text a.name ]) predictiveList )
 
 getPredictive : List Ma.Attribute -> String -> List Ma.Attribute
 getPredictive attributes str =
