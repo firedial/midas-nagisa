@@ -12,14 +12,30 @@ import Model.Balance
 import Model.Attribute as Ma
 import Repository.AttributeCollection
 
+type Panel
+    = Amount
+    | Item
+    | Kind
+    | Purpose
+    | Place
+    | Date
+    | None
+
 view : Repository.AttributeCollection.Model -> String -> Html msg
 view acs str =
     let
         balance = split " " str |> tail |> withDefault [] |> join " " |> getBalanceFromString acs
+        panel = getInputPanelName str
+        last = split " " str |> List.reverse |> head |> withDefault ""
     in
     -- div [] [ text balanceString ]
     div [] 
         [ div [] [ Model.Balance.htmlMsg balance ]
+        , case panel of
+            Kind -> getPredictive acs.kindAttributeModel.attributes last |> showAttributes
+            Purpose -> getPredictive acs.purposeAttributeModel.attributes last |> showAttributes
+            Place -> getPredictive acs.placeAttributeModel.attributes last |> showAttributes
+            _ -> div [] []
         ]
 
 getBalanceFromString : Repository.AttributeCollection.Model -> String -> Model.Balance.Balance
@@ -55,4 +71,26 @@ getAttributeId attributes str =
     |> map (\n -> n.id)
     |> head 
     |> withDefault 0
+
+showAttributes : List Ma.Attribute -> Html msg
+showAttributes attributes =
+    div [] ( map (\a -> div [] [ text a.name ]) attributes )
+
+getPredictive : List Ma.Attribute -> String -> List Ma.Attribute
+getPredictive attributes str =
+    filter (\n -> String.startsWith str n.name) attributes
+
+getInputPanelName : String -> Panel
+getInputPanelName str =
+    let
+        len = split " " str |> List.length
+    in
+    case len of
+        2 -> Amount
+        3 -> Item
+        4 -> Kind
+        5 -> Purpose
+        6 -> Place
+        7 -> Date
+        _ -> None
 
