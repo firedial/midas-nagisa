@@ -76,12 +76,24 @@ showAttributes : List Ma.Attribute -> Html msg
 showAttributes attributes =
     let
         predictiveList = List.take 8 attributes
+        strings = map (\a -> a.name) predictiveList
+        sameString = getSamePrefixString "" strings
     in
-    div [] ( map (\a -> div [] [ text a.name ]) predictiveList )
+    div [] ( map (\s -> div [] [ text s ]) (sameString :: strings) )
 
 getPredictive : List Ma.Attribute -> String -> List Ma.Attribute
 getPredictive attributes str =
     filter (\n -> String.startsWith str n.name) attributes
+
+getSamePrefixString : String -> List String -> String
+getSamePrefixString str strings =
+    let
+        stringHead = map (String.left 1) strings
+        stringTail = map (String.dropLeft 1) strings
+        startString = stringHead |> head |> withDefault ""
+        s = List.foldl (\x y -> if x /= y then "" else x) startString stringHead
+    in
+    if s == "" then str else getSamePrefixString (str ++ s) stringTail
 
 getInputPanelName : String -> Panel
 getInputPanelName str =
