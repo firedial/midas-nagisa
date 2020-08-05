@@ -53,7 +53,14 @@ update msg model =
             let
                 cmd = getCommand str
             in
-            ( { model | input = str, command = cmd }, Cmd.none )
+            case cmd of 
+                Out ->
+                    let
+                        outstr = View.Terminal.Out.getString model.acsModel str
+                    in
+                    ( { model | input = outstr, command = cmd }, Cmd.none )
+                _ -> 
+                    ( { model | input = str, command = cmd }, Cmd.none )
         Send ->
             case model.command of
                 Out ->

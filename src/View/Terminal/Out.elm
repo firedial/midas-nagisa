@@ -1,4 +1,4 @@
-module View.Terminal.Out exposing (view, getBalanceFromString)
+module View.Terminal.Out exposing (view, getBalanceFromString, getString)
 
 import Html exposing (..)
 import Html.Attributes
@@ -21,9 +21,57 @@ type Panel
     | Date
     | None
 
-view : Repository.AttributeCollection.Model -> String -> Html msg
-view acs str =
+
+getString : Repository.AttributeCollection.Model -> String -> String
+getString acs strd =
     let
+        str = split "." strd |> head |> withDefault ""
+        panel = getInputPanelName str
+        lastd = split " " strd |> List.reverse |> head |> withDefault ""
+        lastword = 
+            case panel of
+                Kind -> getWordWithDotCommand acs.kindAttributeModel.attributes lastd
+                Purpose -> getWordWithDotCommand acs.purposeAttributeModel.attributes lastd
+                Place -> getWordWithDotCommand acs.placeAttributeModel.attributes lastd
+                _ -> lastd
+    in
+    split " " str |> List.reverse |> tail |> withDefault [] |> (::) lastword |> List.reverse |> String.join " "
+
+getWordWithDotCommand : List Ma.Attribute -> String -> String
+getWordWithDotCommand attributes wordd =
+    let
+        c = if String.contains ".." wordd then "." else split "." wordd |> tail |> withDefault [] |> head |> withDefault ""
+        word = split "." wordd |> head |> withDefault ""
+        num = convertDotCommandToNumber c
+        predictives = getPredictive attributes word |> map (\x -> x.name)
+    in
+    if c == "." then
+        getSamePrefixString "" predictives
+    else
+        case num of
+            Nothing -> wordd
+            Just n ->
+                let
+                    w = List.drop n predictives |> head
+                in
+                case w of
+                    Just w_ -> w_ ++ " "
+                    Nothing -> ""
+
+convertDotCommandToNumber : String -> Maybe Int
+convertDotCommandToNumber c =
+    case c of
+        "f" -> Just 0
+        "j" -> Just 1
+        "g" -> Just 2 
+        "h" -> Just 3 
+        _ -> Nothing
+
+
+view : Repository.AttributeCollection.Model -> String -> Html msg
+view acs strd =
+    let
+        str = split "." strd |> head |> withDefault ""
         balance = split " " str |> tail |> withDefault [] |> join " " |> getBalanceFromString acs
         panel = getInputPanelName str
         last = split " " str |> List.reverse |> head |> withDefault ""
