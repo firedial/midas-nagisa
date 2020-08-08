@@ -82,11 +82,19 @@ update msg model =
             in
             ( { model | acsModel = attributeCollectionModel }, Cmd.none)
         Receive result ->
-            case result of
-                Ok msg_ ->
-                    ( { model | input = "", error = msg_ }, Cmd.none )
-                Err err ->
-                    ( { model | error = Request.Util.getErrMsg err }, Cmd.none )
+            case model.command of
+                Out ->
+                    case result of
+                        Ok msg_ ->
+                            let
+                                input = if msg_ == "OK" then "" else model.input
+                                command = if msg_ == "OK" then None else model.command
+                            in
+                            ( { model | input = input, error = msg_, command = command }, Cmd.none )
+                        Err err ->
+                            ( { model | error = Request.Util.getErrMsg err }, Cmd.none )
+                _ ->
+                    ( model, Cmd.none )
 
 view : Model -> Html Msg
 view model =
