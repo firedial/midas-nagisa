@@ -7,6 +7,7 @@ import Http exposing (..)
 import Maybe exposing (andThen, withDefault)
 import String exposing (split, join, toInt)
 import List exposing (head, tail, filter, map)
+import Tuple
 
 import Model.Balance
 import Model.Attribute as Ma
@@ -65,6 +66,10 @@ convertDotCommandToNumber c =
         "j" -> Just 1
         "g" -> Just 2 
         "h" -> Just 3 
+        "d" -> Just 4 
+        "k" -> Just 5 
+        "s" -> Just 6
+        "l" -> Just 7 
         _ -> Nothing
 
 
@@ -126,8 +131,10 @@ showAttributes attributes =
         predictiveList = List.take 8 attributes
         strings = map (\a -> a.name) predictiveList
         sameString = getSamePrefixString "" strings
+        c = [".", "f", "j", "g", "h", "d", "k", "s", "l"]
+        l = List.map2 (\x y -> (x, y)) c (sameString :: strings)
     in
-    div [] ( map (\s -> div [] [ text s ]) (sameString :: strings) )
+    div [] ( map (\s -> div [] [ text (Tuple.first s ++ ": " ++ Tuple.second s) ]) l )
 
 getPredictive : List Ma.Attribute -> String -> List Ma.Attribute
 getPredictive attributes str =
