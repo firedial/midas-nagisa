@@ -122,10 +122,7 @@ view : Model -> Browser.Document Msg
 view model =
     { title = "midas"
     , body = 
-        [ Html.a [Html.Attributes.href "/nagisa"] [Html.text "top"]
-        , Html.br [] []
-        , Html.a [Html.Attributes.href "/nagisa/terminal"] [Html.text "terminal"]
-        , Html.br [] []
+        [ Html.br [] []
         , case model.page of
             NotFound ->
                 viewNotFound
