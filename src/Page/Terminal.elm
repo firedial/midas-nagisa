@@ -59,6 +59,11 @@ update msg model =
                         outstr = View.Terminal.Out.getString model.acsModel str
                     in
                     ( { model | input = outstr, command = cmd }, Cmd.none )
+                Move ->
+                    let
+                        movestr = View.Terminal.Move.getString model.acsModel str
+                    in
+                    ( { model | input = movestr, command = cmd }, Cmd.none )
                 _ -> 
                     ( { model | input = str, command = cmd }, Cmd.none )
         Send ->
@@ -111,15 +116,19 @@ view model =
                     [ text "Submit" ]
                 ]
             ] 
-        , br [] [ ]
-        , Html.text model.error
-        , case model.command of
-            None ->
-                Html.text "none"
-            Out ->
-                View.Terminal.Out.view model.acsModel model.input
-            Move ->
-                View.Terminal.Move.view model.acsModel model.input
+        , br [] []
+        , div [] [Html.text model.error]
+        , br [] []
+        , div []
+            [
+                case model.command of
+                    None ->
+                        Html.text "none"
+                    Out ->
+                        View.Terminal.Out.view model.acsModel model.input
+                    Move ->
+                        View.Terminal.Move.view model.acsModel model.input
+            ]
         ]
 
 getCommand : String -> Command
