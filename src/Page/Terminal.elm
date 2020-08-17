@@ -98,6 +98,16 @@ update msg model =
                             ( { model | input = input, error = msg_, command = command }, Cmd.none )
                         Err err ->
                             ( { model | error = Request.Util.getErrMsg err }, Cmd.none )
+                Move ->
+                    case result of
+                        Ok msg_ ->
+                            let
+                                input = if msg_ == "OK" then "" else model.input
+                                command = if msg_ == "OK" then None else model.command
+                            in
+                            ( { model | input = input, error = msg_, command = command }, Cmd.none )
+                        Err err ->
+                            ( { model | error = Request.Util.getErrMsg err }, Cmd.none )
                 _ ->
                     ( model, Cmd.none )
 
