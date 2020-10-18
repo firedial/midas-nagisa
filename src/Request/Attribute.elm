@@ -50,7 +50,7 @@ decodeAttribute =
         (field "id" Decode.int)
         (field "name" Decode.string)
         (field "description" Decode.string)
-        (field "group_id" Decode.int)
+        (field "category_id" Decode.int)
 
 getGetUrl : String -> String
 getGetUrl attribute = "http://localhost:3333/misuzu/api/v1/" ++ attribute ++ "/"

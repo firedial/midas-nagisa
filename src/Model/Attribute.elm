@@ -11,7 +11,7 @@ type alias Attribute =
     { id : Int
     , name : String
     , description : String
-    , group_id : Int
+    , category_id : Int
     }
 
 resultAttributes : Result Error (List Attribute) -> List Attribute
@@ -37,7 +37,7 @@ decodeAttribute =
         (field "id" Decode.int)
         (field "name" Decode.string)
         (field "description" Decode.string)
-        (field "group_id" Decode.int)
+        (field "category_id" Decode.int)
 
 getAttributeNumber : List Attribute -> Maybe String -> Maybe Int
 getAttributeNumber attributes str =
