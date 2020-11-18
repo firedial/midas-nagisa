@@ -1,0 +1,9 @@
+FROM httpd:2.4.46
+
+# 設定ファイルのコピー
+# 80 番ポートから 8080 番ポートに変えているだけ
+COPY ./docker/rasp/httpd.conf /usr/local/apache2/conf/httpd.conf
+
+COPY ./ /usr/local/apache2/htdocs/
+
+
