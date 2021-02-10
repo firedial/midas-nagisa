@@ -1,2 +1,6 @@
+node_modules/
+/dist/
+
 elm-stuff/
 src/Config/Env.elm
+main.js
