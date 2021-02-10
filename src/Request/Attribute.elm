@@ -5,6 +5,7 @@ import Json.Encode as Encode exposing (..)
 import Json.Decode as Decode exposing (..)
 
 import Model.Attribute 
+import Config.Env
 
 type alias Model =
     { errorMsg : String
@@ -53,4 +54,4 @@ decodeAttribute =
         (field "category_id" Decode.int)
 
 getGetUrl : String -> String
-getGetUrl attribute = "http://localhost:3333/misuzu/api/v1/" ++ attribute ++ "/"
+getGetUrl attribute = Config.Env.getApiUrl ++ "/" ++ attribute ++ "/"
