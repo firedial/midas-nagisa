@@ -1,7 +1,7 @@
 module Util.Predictive exposing (getWordWithDotCommand, showAttributes, getPredictive)
 
 import Html exposing (..)
-import List exposing (head, tail, filter, map)
+import List exposing (head, tail, filter)
 import Maybe exposing (andThen, withDefault)
 import String exposing (split, join, toInt)
 
@@ -10,8 +10,8 @@ import Model.Attribute as Ma
 getSamePrefixString : String -> List String -> String
 getSamePrefixString str strings =
     let
-        stringHead = map (String.left 1) strings
-        stringTail = map (String.dropLeft 1) strings
+        stringHead = List.map (String.left 1) strings
+        stringTail = List.map (String.dropLeft 1) strings
         startString = stringHead |> head |> withDefault ""
         s = List.foldl (\x y -> if x /= y then "" else x) startString stringHead
     in
@@ -21,12 +21,12 @@ showAttributes : List Ma.Attribute -> Html msg
 showAttributes attributes =
     let
         predictiveList = List.take 8 attributes
-        strings = map (\a -> a.name) predictiveList
+        strings = List.map (\a -> a.name) predictiveList
         sameString = getSamePrefixString "" strings
         c = [".", "f", "j", "g", "h", "d", "k", "s", "l"]
         l = List.map2 (\x y -> (x, y)) c (sameString :: strings)
     in
-    div [] ( map (\s -> div [] [ text (Tuple.first s ++ ": " ++ Tuple.second s) ]) l )
+    div [] ( List.map (\s -> div [] [ text (Tuple.first s ++ ": " ++ Tuple.second s) ]) l )
 
 getWordWithDotCommand : List Ma.Attribute -> String -> String
 getWordWithDotCommand attributes wordd =
@@ -34,7 +34,7 @@ getWordWithDotCommand attributes wordd =
         c = if String.contains ".." wordd then "." else split "." wordd |> tail |> withDefault [] |> head |> withDefault ""
         word = split "." wordd |> head |> withDefault ""
         num = convertDotCommandToNumber c
-        predictives = getPredictive attributes word |> map (\x -> x.name)
+        predictives = getPredictive attributes word |> List.map (\x -> x.name)
     in
     if c == "." then
         getSamePrefixString "" predictives

@@ -6,7 +6,7 @@ import Html.Events
 import Http exposing (..)
 import Maybe exposing (andThen, withDefault)
 import String exposing (split, join, toInt)
-import List exposing (head, tail, filter, map)
+import List exposing (head, tail, filter)
 import Tuple
 
 import Model.Balance
@@ -86,7 +86,7 @@ getBalanceFromString acs str =
 getAttributeId : List Ma.Attribute -> String -> Int
 getAttributeId attributes str =
     filter (\n -> n.name == str) attributes
-    |> map (\n -> n.id)
+    |> List.map (\n -> n.id)
     |> head 
     |> withDefault 0
 
