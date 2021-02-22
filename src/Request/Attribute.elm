@@ -8,16 +8,17 @@ import Model.Attribute
 import Config.Env
 
 type alias Model =
-    { errorMsg : String
+    { status: String
+    , errorMsg : String
     , attributes : Model.Attribute.Attributes
     }
 
 type Msg 
-    = GetAttributes (Result Http.Error Model.Attribute.Attributes)
+    = GetAttributes (Result Http.Error Model)
 
 init : String -> ( Model, Cmd Msg )
 init attribute = 
-    ( Model "" [], getAttributes attribute )
+    ( Model "" "" [], getAttributes attribute )
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -25,7 +26,7 @@ update msg model =
         GetAttributes result ->
             case result of
                 Ok list ->
-                    ( { model | attributes = list }, Cmd.none)
+                    ( { model | attributes = list.attributes }, Cmd.none)
                 Err err ->
                     ( { model | errorMsg = "init api error" }, Cmd.none )
 
@@ -41,9 +42,12 @@ getAttributes attribute =
         , tracker = Nothing
         }
 
-decodeAttributes : Decode.Decoder Model.Attribute.Attributes
+decodeAttributes : Decode.Decoder Model
 decodeAttributes =
-    Decode.list decodeAttribute
+    Decode.map3 Model
+        (field "status" Decode.string)
+        (field "message" Decode.string)
+        (field "data" (Decode.list decodeAttribute))
 
 decodeAttribute : Decode.Decoder Model.Attribute.Attribute
 decodeAttribute =
@@ -54,4 +58,4 @@ decodeAttribute =
         (field "category_id" Decode.int)
 
 getGetUrl : String -> String
-getGetUrl attribute = Config.Env.getApiUrl ++ "/" ++ attribute ++ "/"
+getGetUrl attribute = Config.Env.getApiUrl ++ "/" ++ attribute ++ "_elements/"
