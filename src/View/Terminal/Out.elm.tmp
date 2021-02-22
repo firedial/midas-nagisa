@@ -56,40 +56,6 @@ view acs strd =
             _ -> div [] []
         ]
 
-getBalanceFromString : Repository.AttributeCollection.Model -> String -> Model.Balance.Balance
-getBalanceFromString acs str =
-    let
-        kinds = acs.kindAttributeModel.attributes
-        purposes = acs.purposeAttributeModel.attributes
-        places = acs.placeAttributeModel.attributes
-        strs = split " " str
-
-        amount = head strs |> andThen toInt |> withDefault 0 |> (*) -1
-        amountTail = tail strs |> withDefault []
-
-        item = head amountTail |> withDefault ""
-        itemTail = tail amountTail |> withDefault []
-
-        kind = head itemTail |> withDefault "" |> getAttributeId kinds
-        kindTail = tail itemTail |> withDefault []
-
-        purpose = head kindTail |> withDefault "" |> getAttributeId purposes 
-        purposeTail = tail kindTail |> withDefault []
-
-        place = head purposeTail |> withDefault "" |> getAttributeId places
-        placeTail = tail purposeTail |> withDefault []
-
-        date = head placeTail |> withDefault ""
-    in
-    Model.Balance.Balance 0 amount item kind purpose place date
-
-getAttributeId : List Ma.Attribute -> String -> Int
-getAttributeId attributes str =
-    filter (\n -> n.name == str) attributes
-    |> List.map (\n -> n.id)
-    |> head 
-    |> withDefault 0
-
 getInputPanelName : String -> Panel
 getInputPanelName str =
     let

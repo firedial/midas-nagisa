@@ -1,20 +1,65 @@
-module Model.Attribute exposing (Attribute, Attributes, Kinds, Purposes, Places, decodeAttributes, resultAttributes, getAttributeNumber)
+module Model.Attribute exposing 
+    ( AttributeElement
+    , AttributeElements
+    , KindElements
+    , PurposeElements
+    , PlaceElements
+    , AttributeCollection
+    , AttributesCollection
+    , decodeAttributeElements
+    , initAttributesCollection
+    , resultAttributes
+    , getAttributeNumber
+    )
 
-import Json.Decode as Decode exposing (..)
+import Json.Decode
+import Http 
 
-type alias Attributes = List Attribute
-type alias Kinds = List Attribute
-type alias Purposes = List Attribute
-type alias Places = List Attribute
+type alias AttributeElements = List AttributeElement
+type alias KindElements = List AttributeElement
+type alias PurposeElements = List AttributeElement
+type alias PlaceElements = List AttributeElement
 
-type alias Attribute =
+type alias AttributeElement =
     { id : Int
     , name : String
     , description : String
     , category_id : Int
     }
 
-resultAttributes : Result Error (List Attribute) -> List Attribute
+type alias AttributesCollection =
+    { kindCollection : AttributeCollection
+    , purposeCollection : AttributeCollection
+    , placeCollection : AttributeCollection
+    }
+
+type alias AttributeCollection =
+    { attributeElements : AttributeElements
+    }
+
+
+decodeAttributeElements : Json.Decode.Decoder (List AttributeElement)
+decodeAttributeElements =
+    Json.Decode.list decodeAttributeElement
+
+decodeAttributeElement : Json.Decode.Decoder AttributeElement
+decodeAttributeElement =
+    Json.Decode.map4 AttributeElement
+        (Json.Decode.field "id" Json.Decode.int)
+        (Json.Decode.field "name" Json.Decode.string)
+        (Json.Decode.field "description" Json.Decode.string)
+        (Json.Decode.field "category_id" Json.Decode.int)
+
+initAttributesCollection : AttributesCollection
+initAttributesCollection =
+    AttributesCollection
+        (AttributeCollection [])
+        (AttributeCollection [])
+        (AttributeCollection [])
+
+
+
+resultAttributes : Result Http.Error AttributeElements -> AttributeElements
 resultAttributes result =
     case result of
         Ok attributes ->
@@ -23,23 +68,7 @@ resultAttributes result =
             []
 
 
--- decodeAttributes : String -> Result Error (List Attribute)
--- decodeAttributes str =
---     decodeString (list decodeAttribute) str
-
-decodeAttributes : Decode.Decoder (List Attribute)
-decodeAttributes =
-    list decodeAttribute
-
-decodeAttribute : Decode.Decoder Attribute
-decodeAttribute =
-    Decode.map4 Attribute
-        (field "id" Decode.int)
-        (field "name" Decode.string)
-        (field "description" Decode.string)
-        (field "category_id" Decode.int)
-
-getAttributeNumber : List Attribute -> Maybe String -> Maybe Int
+getAttributeNumber : AttributeElements -> Maybe String -> Maybe Int
 getAttributeNumber attributes str =
     case str of
         Nothing ->
@@ -54,7 +83,7 @@ getAttributeNumber attributes str =
                     Nothing ->
                         Nothing
 
-getAttributeNumberExpect : List Attribute -> Maybe String -> Maybe Int
+getAttributeNumberExpect : AttributeElements -> Maybe String -> Maybe Int
 getAttributeNumberExpect attributes str =
     case str of
         Nothing ->
@@ -73,11 +102,11 @@ getAttributeNumberExpect attributes str =
                 else
                     Nothing
         
-enableAttribute : List Attribute -> String -> List Attribute
+enableAttribute : AttributeElements -> String -> AttributeElements
 enableAttribute attributes str =
     List.filter (isStartStringAttribute str) attributes
 
-isStartStringAttribute : String -> Attribute -> Bool
+isStartStringAttribute : String -> AttributeElement -> Bool
 isStartStringAttribute splitString attribute =
     isStartString splitString attribute.name
 

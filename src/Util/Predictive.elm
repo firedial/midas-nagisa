@@ -17,7 +17,7 @@ getSamePrefixString str strings =
     in
     if s == "" then str else getSamePrefixString (str ++ s) stringTail
 
-showAttributes : List Ma.Attribute -> Html msg
+showAttributes : Ma.AttributeElements -> Html msg
 showAttributes attributes =
     let
         predictiveList = List.take 8 attributes
@@ -28,7 +28,7 @@ showAttributes attributes =
     in
     div [] ( List.map (\s -> div [] [ text (Tuple.first s ++ ": " ++ Tuple.second s) ]) l )
 
-getWordWithDotCommand : List Ma.Attribute -> String -> String
+getWordWithDotCommand : Ma.AttributeElements -> String -> String
 getWordWithDotCommand attributes wordd =
     let
         c = if String.contains ".." wordd then "." else split "." wordd |> tail |> withDefault [] |> head |> withDefault ""
@@ -49,7 +49,7 @@ getWordWithDotCommand attributes wordd =
                     Just w_ -> w_ ++ " "
                     Nothing -> ""
 
-getPredictive : List Ma.Attribute -> String -> List Ma.Attribute
+getPredictive : Ma.AttributeElements -> String -> Ma.AttributeElements
 getPredictive attributes str =
     filter (\n -> String.startsWith str n.name) attributes
 

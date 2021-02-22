@@ -10,7 +10,7 @@ import Config.Env
 type alias Model =
     { status: String
     , errorMsg : String
-    , attributes : Model.Attribute.Attributes
+    , attributes : Model.Attribute.AttributeElements
     }
 
 type Msg 
@@ -49,9 +49,9 @@ decodeAttributes =
         (field "message" Decode.string)
         (field "data" (Decode.list decodeAttribute))
 
-decodeAttribute : Decode.Decoder Model.Attribute.Attribute
+decodeAttribute : Decode.Decoder Model.Attribute.AttributeElement
 decodeAttribute =
-    Decode.map4 Model.Attribute.Attribute
+    Decode.map4 Model.Attribute.AttributeElement
         (field "id" Decode.int)
         (field "name" Decode.string)
         (field "description" Decode.string)

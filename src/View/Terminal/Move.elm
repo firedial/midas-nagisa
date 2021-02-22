@@ -93,7 +93,7 @@ getMoveFromString acs str =
     in
     Model.Move.Move attribute amount beforeId afterId date
 
-getAttributeId : List Ma.Attribute -> String -> Int
+getAttributeId : Ma.AttributeElements -> String -> Int
 getAttributeId attributes str =
     filter (\n -> n.name == str) attributes
     |> List.map (\n -> n.id)

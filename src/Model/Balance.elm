@@ -1,4 +1,4 @@
-module Model.Balance exposing (Balance, Balances, init, htmlMsg)
+module Model.Balance exposing (Balance, Balances, init, htmlMsg, encodeBalance)
 
 import Html exposing (..)
 import Json.Encode as Encode exposing (..)
@@ -48,3 +48,14 @@ init = Balance 0 0 "" 0 0 0 ""
 --         (field "place_id" Decode.int)
 --         (field "date" Decode.string)
 
+
+encodeBalance : Balance -> Encode.Value
+encodeBalance balance =
+    Encode.object
+        [ ("amount", Encode.int balance.amount)
+        , ("item", Encode.string balance.item)
+        , ("kind_id", Encode.int balance.kindId)
+        , ("purpose_id", Encode.int balance.purposeId)
+        , ("place_id", Encode.int balance.placeId)
+        , ("date", Encode.string balance.date)
+        ]
