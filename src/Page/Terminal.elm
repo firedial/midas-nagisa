@@ -4,8 +4,8 @@ import Html exposing (..)
 import Html.Attributes
 import Html.Events
 import Http 
-import Json.Encode as Encode exposing (..)
-import Json.Decode as Decode exposing (..)
+import Json.Encode
+import Json.Decode
 import Maybe exposing (andThen, withDefault)
 import String exposing (split, join, toInt)
 import List exposing (head, tail, filter, map)
@@ -23,9 +23,15 @@ import Request.Util
 
 type alias Model =
     { command : Command
-    , acsModel : Repository.AttributeCollection.Model
+    , asc : Model.Attribute.AttributesCollection
     , input : String
     , error : String
+    }
+
+type alias GetAttributeElementsResponse =
+    { status : String
+    , message : String
+    , data : Model.Attribute.AttributeElements
     }
 
 type Command
@@ -35,15 +41,18 @@ type Command
 
 init : ( Model, Cmd Msg )
 init = 
-    let
-        ( acsModel, cmd ) = Repository.AttributeCollection.init
-    in
-    ( Model None acsModel "" "" , Cmd.map GetAttributeCollection cmd )
+    ( Model None Model.Attribute.initAttributesCollection "" ""
+    , Cmd.batch
+        [ getAttributeElements "kind"
+        , getAttributeElements "purpose"
+        , getAttributeElements "place"
+        ]
+    )
 
 type Msg
     = Send
     | Input String
-    | GetAttributeCollection Repository.AttributeCollection.Msg
+    | GetAttributeElements String (Result Http.Error GetAttributeElementsResponse)
     | Receive (Result Http.Error String)
     | OutMsg Page.Terminal.Out.Msg
     | MoveMsg Page.Terminal.Move.Msg
@@ -70,11 +79,24 @@ update msg model =
                     ( { model | input = str }, Cmd.none )
         Send ->
             ( model, Cmd.none )
-        GetAttributeCollection msg_ ->
-            let
-                ( attributeCollectionModel, _ ) = Repository.AttributeCollection.update msg_ model.acsModel
-            in
-            ( { model | acsModel = attributeCollectionModel }, Cmd.none)
+        GetAttributeElements attibuteName result ->
+                case result of
+                    Ok response ->
+                        case response.status of
+                            "OK" ->
+                                ( { model 
+                                    | input = ""
+                                    , error = ""
+                                    , asc = getAttributesCollectionUpdatedAttributeElements
+                                        model.asc
+                                        attibuteName
+                                        response.data
+                                }
+                                , Cmd.none )
+                            _ ->
+                                ( { model | error = response.message }, Cmd.none )
+                    Err err ->
+                        ( { model | error = Request.Util.getErrMsg err }, Cmd.none )
         Receive result ->
             ( model, Cmd.none )
         OutMsg msg_ ->
@@ -128,3 +150,48 @@ view model =
                         Page.Terminal.Move.view model_ |> Html.map MoveMsg
             ]
         ]
+
+
+getAttributeElements : String -> Cmd Msg
+getAttributeElements attribute =
+    Http.request
+        { method = "GET"
+        , headers = [ Http.header "Authorization" ( "Bearer " ++ "token" ) ]
+        , url = Config.Env.getApiUrl ++ "/" ++ attribute ++ "_elements/"
+        , body = Http.emptyBody
+        , expect = Http.expectJson (GetAttributeElements attribute) decodeAttributeElementsResoponse
+        , timeout = Nothing
+        , tracker = Nothing
+        }
+
+decodeAttributeElementsResoponse : Json.Decode.Decoder GetAttributeElementsResponse
+decodeAttributeElementsResoponse =
+    Json.Decode.map3 GetAttributeElementsResponse
+        (Json.Decode.field "status" Json.Decode.string)
+        (Json.Decode.field "message" Json.Decode.string)
+        (Json.Decode.field "data" Model.Attribute.decodeAttributeElements)
+
+getAttributesCollectionUpdatedAttributeElements : Model.Attribute.AttributesCollection -> String -> Model.Attribute.AttributeElements -> Model.Attribute.AttributesCollection
+getAttributesCollectionUpdatedAttributeElements asc attributeName attributeElements =
+    case attributeName of
+        "kind" ->
+            let
+                attributeCollection = asc.kindCollection
+                newAttributeCollection = { attributeCollection | attributeElements = attributeElements }
+            in
+            { asc | kindCollection = newAttributeCollection }
+        "purpose" ->
+            let
+                attributeCollection = asc.purposeCollection
+                newAttributeCollection = { attributeCollection | attributeElements = attributeElements }
+            in
+            { asc | purposeCollection = newAttributeCollection }
+        "place" ->
+            let
+                attributeCollection = asc.placeCollection
+                newAttributeCollection = { attributeCollection | attributeElements = attributeElements }
+            in
+            { asc | placeCollection = newAttributeCollection }
+        _ ->
+            asc
+
