@@ -5,6 +5,8 @@ import String
 import List
 import Http
 import Html exposing (..)
+import Html.Events
+import Html.Attributes
 import Request.Util
 import Json.Decode
 import Config.Env
@@ -33,8 +35,8 @@ type Panel
     | Date
     | None
 
-init : ( Model, Cmd Msg )
-init = ( Model Model.Attribute.initAttributesCollection "" "", Cmd.none )
+init : String -> ( Model, Cmd Msg )
+init str = ( Model Model.Attribute.initAttributesCollection str "", Cmd.none )
 
 type Msg
     = Send
@@ -63,7 +65,7 @@ update msg model =
                 Err err ->
                     ( { model | error = Request.Util.getErrMsg err }, Cmd.none )
 
-view : Model -> Html.Html msg
+view : Model -> Html.Html Msg
 view model =
     let
         acs = model.asc
@@ -74,16 +76,29 @@ view model =
         last = String.split " " str |> List.reverse |> List.head |> Maybe.withDefault ""
     in
     div [] 
-        [ div [] [ Model.Balance.htmlMsg balance ]
+        [ 
+        div []
+        [ Html.form 
+            [ Html.Events.onSubmit Send ]
+            [ input 
+                [ Html.Attributes.value <| model.input, Html.Events.onInput Input, Html.Attributes.autofocus True ]
+                []
+            , button
+                []
+                [ text "Submit" ]
+            ]
+        , Html.text "none"
+        ]
+        , div [] [Html.text model.error]
+        , div [] [ Model.Balance.htmlMsg balance ]
+        , br [] []
+        , br [] []
         , case panel of
             Kind -> Util.Predictive.getPredictive acs.kindCollection.attributeElements last |> Util.Predictive.showAttributes
             Purpose -> Util.Predictive.getPredictive acs.purposeCollection.attributeElements last |> Util.Predictive.showAttributes
             Place -> Util.Predictive.getPredictive acs.placeCollection.attributeElements last |> Util.Predictive.showAttributes
             _ -> div [] []
         ]
-
-
-
 
 
 postBalance : Model.Balance.Balance -> Cmd Msg

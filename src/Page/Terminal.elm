@@ -36,9 +36,8 @@ init : ( Model, Cmd Msg )
 init = 
     let
         ( acsModel, cmd ) = Repository.AttributeCollection.init
-        ( outModel, _ ) = Page.Terminal.Out.init
     in
-    ( Model ( Out outModel ) acsModel "" "" , Cmd.map GetAttributeCollection cmd )
+    ( Model None acsModel "" "" , Cmd.map GetAttributeCollection cmd )
 
 type Msg
     = Send
@@ -51,7 +50,17 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
     case msg of
         Input str ->
-            ( model, Cmd.none )
+            let
+                command = str |> String.split " " |> List.head |> Maybe.withDefault ""
+            in
+            case command of
+                "out" ->
+                    let
+                        ( outModel, _ ) = Page.Terminal.Out.init str
+                    in
+                    ( { model | command = Out outModel, input = str }, Cmd.none )
+                _ ->
+                    ( { model | input = str }, Cmd.none )
         Send ->
             ( model, Cmd.none )
         GetAttributeCollection msg_ ->
@@ -79,26 +88,23 @@ view model =
     div []
         [ br [] []
         , div []
-            [ Html.form 
-                [ Html.Events.onSubmit Send ]
-                [ input 
-                    [ Html.Attributes.value <| model.input, Html.Events.onInput Input ]
-                    []
-                , button
-                    []
-                    [ text "Submit" ]
-                ]
-            ] 
-        , br [] []
-        , div [] [Html.text model.error]
-        , br [] []
-        , div []
             [
                 case model.command of
                     None ->
-                        Html.text "none"
+                        div []
+                            [ Html.form 
+                                [ Html.Events.onSubmit Send ]
+                                [ input 
+                                    [ Html.Attributes.value <| model.input, Html.Events.onInput Input, Html.Attributes.autofocus True ]
+                                    []
+                                , button
+                                    []
+                                    [ text "Submit" ]
+                                ]
+                            , Html.text "none"
+                            ]
                     Out model_ ->
-                        Page.Terminal.Out.view model_
+                        Page.Terminal.Out.view model_ |> Html.map OutMsg
             ]
         ]
 
