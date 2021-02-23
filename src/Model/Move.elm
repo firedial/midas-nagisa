@@ -1,7 +1,7 @@
-module Model.Move exposing (Move, htmlMsg)
+module Model.Move exposing (Move, htmlMsg, encodeMove)
 
 import Html exposing (..)
-import Json.Encode as Encode exposing (..)
+import Json.Encode
 
 import Model.Attribute as Attribute
 
@@ -26,6 +26,16 @@ htmlMsg move =
         , br [] []
         , text <| (++) "date: " move.date
         , br [] []
+        ]
+
+encodeMove : Move -> Json.Encode.Value
+encodeMove move =
+    Json.Encode.object
+        [ ("attribute", Json.Encode.string move.attribute)
+        , ("amount", Json.Encode.int move.amount)
+        , ("before_id", Json.Encode.int move.beforeId)
+        , ("after_id", Json.Encode.int move.afterId)
+        , ("date", Json.Encode.string move.date)
         ]
 
 

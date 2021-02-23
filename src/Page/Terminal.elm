@@ -17,7 +17,7 @@ import Model.Attribute
 import Config.Env
 
 import Page.Terminal.Out
-import View.Terminal.Move
+import Page.Terminal.Move
 import Repository.AttributeCollection
 import Request.Util
 
@@ -31,6 +31,7 @@ type alias Model =
 type Command
     = None
     | Out Page.Terminal.Out.Model
+    | Move Page.Terminal.Move.Model
 
 init : ( Model, Cmd Msg )
 init = 
@@ -45,6 +46,7 @@ type Msg
     | GetAttributeCollection Repository.AttributeCollection.Msg
     | Receive (Result Http.Error String)
     | OutMsg Page.Terminal.Out.Msg
+    | MoveMsg Page.Terminal.Move.Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
@@ -59,6 +61,11 @@ update msg model =
                         ( outModel, _ ) = Page.Terminal.Out.init str
                     in
                     ( { model | command = Out outModel, input = str }, Cmd.none )
+                "move" ->
+                    let
+                        ( moveModel, _ ) = Page.Terminal.Move.init str
+                    in
+                    ( { model | command = Move moveModel, input = str }, Cmd.none )
                 _ ->
                     ( { model | input = str }, Cmd.none )
         Send ->
@@ -79,6 +86,18 @@ update msg model =
                     in
                     ( { model | command = Out newModel }
                     , Cmd.map OutMsg newCmd
+                    )
+                _ ->
+                    ( model, Cmd.none )
+        MoveMsg msg_ ->
+            case model.command of
+                Move model_ ->
+                    let 
+                        ( newModel, newCmd ) =
+                            Page.Terminal.Move.update msg_ model_
+                    in
+                    ( { model | command = Move newModel }
+                    , Cmd.map MoveMsg newCmd
                     )
                 _ ->
                     ( model, Cmd.none )
@@ -105,27 +124,7 @@ view model =
                             ]
                     Out model_ ->
                         Page.Terminal.Out.view model_ |> Html.map OutMsg
+                    Move model_ ->
+                        Page.Terminal.Move.view model_ |> Html.map MoveMsg
             ]
-        ]
-
-postMove : Model.Move.Move -> Cmd Msg
-postMove move =
-    Http.request
-        { method = "POST"
-        , headers = []
-        , url = Config.Env.getApiUrl ++ "/move/"
-        , body = encodeMove move |> Http.jsonBody
-        , expect = Http.expectJson Receive Decode.string
-        , timeout = Nothing
-        , tracker = Nothing
-        }
-
-encodeMove : Model.Move.Move -> Encode.Value
-encodeMove move =
-    Encode.object
-        [ ("attribute", Encode.string move.attribute)
-        , ("amount", Encode.int move.amount)
-        , ("before_id", Encode.int move.beforeId)
-        , ("after_id", Encode.int move.afterId)
-        , ("date", Encode.string move.date)
         ]
