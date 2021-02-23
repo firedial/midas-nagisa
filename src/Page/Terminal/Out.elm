@@ -35,8 +35,8 @@ type Panel
     | Date
     | None
 
-init : String -> ( Model, Cmd Msg )
-init str = ( Model Model.Attribute.initAttributesCollection str "", Cmd.none )
+init : Model.Attribute.AttributesCollection -> String -> ( Model, Cmd Msg )
+init asc str = ( Model asc str "", Cmd.none )
 
 type Msg
     = Send
@@ -87,7 +87,7 @@ view model =
                 []
                 [ text "Submit" ]
             ]
-        , Html.text "none"
+        , Html.text "out"
         ]
         , div [] [Html.text model.error]
         , div [] [ Model.Balance.htmlMsg balance ]

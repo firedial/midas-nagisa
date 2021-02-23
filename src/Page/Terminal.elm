@@ -67,12 +67,12 @@ update msg model =
             case command of
                 "out" ->
                     let
-                        ( outModel, _ ) = Page.Terminal.Out.init str
+                        ( outModel, _ ) = Page.Terminal.Out.init model.asc str
                     in
                     ( { model | command = Out outModel, input = str }, Cmd.none )
                 "move" ->
                     let
-                        ( moveModel, _ ) = Page.Terminal.Move.init str
+                        ( moveModel, _ ) = Page.Terminal.Move.init model.asc str
                     in
                     ( { model | command = Move moveModel, input = str }, Cmd.none )
                 _ ->
