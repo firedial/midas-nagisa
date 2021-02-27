@@ -46,8 +46,20 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
     case msg of
-        Input str ->
-            ( { model | input = str }, Cmd.none )
+        Input strd ->
+            let
+                str = String.split "." strd |> List.head |> Maybe.withDefault ""
+                panel = getInputPanelName str
+                lastd = String.split " " strd |> List.reverse |> List.head |> Maybe.withDefault ""
+                lastword = 
+                    case panel of
+                        Kind -> Util.Predictive.getWordWithDotCommand model.asc.kindCollection.attributeElements lastd
+                        Purpose -> Util.Predictive.getWordWithDotCommand model.asc.purposeCollection.attributeElements lastd
+                        Place -> Util.Predictive.getWordWithDotCommand model.asc.placeCollection.attributeElements lastd
+                        _ -> lastd
+                displayString = String.split " " str |> List.reverse |> List.tail |> Maybe.withDefault [] |> (::) lastword |> List.reverse |> String.join " "
+            in
+            ( { model | input = displayString }, Cmd.none )
         Send ->
             let
                 balance = String.split " " model.input |> List.tail |> Maybe.withDefault [] |> String.join " " |> getBalanceFromString model.asc
