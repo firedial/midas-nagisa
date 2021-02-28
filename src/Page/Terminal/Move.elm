@@ -35,8 +35,8 @@ type Panel
     | Date
     | None
 
-init : Model.Attribute.AttributesCollection -> String -> ( Model, Cmd Msg )
-init asc str = ( Model asc str "", Cmd.none )
+init : Model.Attribute.AttributesCollection -> ( Model, Cmd Msg )
+init asc = ( Model asc "" "", Cmd.none )
 
 type Msg
     = Send
@@ -51,7 +51,7 @@ update msg model =
                 str = String.split "." strd |> List.head |> Maybe.withDefault ""
                 panel = getInputPanelName str
                 lastd = String.split " " strd |> List.reverse |> List.head |> Maybe.withDefault ""
-                attributeName = strd |> String.split " " |> List.tail |> Maybe.andThen List.head |> Maybe.withDefault ""
+                attributeName = strd |> String.split " " |> List.head |> Maybe.withDefault ""
                 attributes = 
                     case attributeName of
                         "purpose" -> model.asc.purposeCollection.attributeElements
@@ -67,7 +67,7 @@ update msg model =
             ( { model | input = displayString }, Cmd.none )
         Send ->
             let
-                move = String.split " " model.input |> List.tail |> Maybe.withDefault [] |> String.join " " |> getMoveFromString model.asc
+                move = getMoveFromString model.asc model.input
                 cmd = postMove move
             in
             ( model, cmd )
@@ -89,9 +89,9 @@ view model =
         strd = model.input
         str = String.split "." strd |> List.head |> Maybe.withDefault ""
         last = String.split " " str |> List.reverse |> List.head |> Maybe.withDefault ""
-        move = String.split " " str |> List.tail |> Maybe.withDefault [] |> String.join " " |> getMoveFromString acs
+        move = getMoveFromString acs str
         panel = getInputPanelName str
-        attributeName = strd |> String.split " " |> List.tail |> Maybe.andThen List.head |> Maybe.withDefault ""
+        attributeName = strd |> String.split " " |> List.head |> Maybe.withDefault ""
         attributes = 
             case attributeName of
                 "purpose" -> acs.purposeCollection.attributeElements
@@ -119,26 +119,6 @@ view model =
             After -> Util.Predictive.getPredictive attributes last |> Util.Predictive.showAttributes
             _ -> div [] []
         ]
-
-getString : Repository.AttributeCollection.Model -> String -> String
-getString acs strd =
-    let
-        str = String.split "." strd |> List.head |> Maybe.withDefault ""
-        panel = getInputPanelName str
-        lastd = String.split " " strd |> List.reverse |> List.head |> Maybe.withDefault ""
-        attributeName = strd |> String.split " " |> List.tail |> Maybe.andThen List.head |> Maybe.withDefault ""
-        attributes = 
-            case attributeName of
-                "purpose" -> acs.purposeAttributeModel.attributes
-                "place" -> acs.placeAttributeModel.attributes
-                _ -> []
-        lastword =
-            case panel of
-                Before -> Util.Predictive.getWordWithDotCommand attributes lastd
-                After -> Util.Predictive.getWordWithDotCommand attributes lastd
-                _ -> lastd
-    in
-    String.split " " str |> List.reverse |> List.tail |> Maybe.withDefault [] |> (::) lastword |> List.reverse |> String.join " "
 
 getMoveFromString : Model.Attribute.AttributesCollection -> String -> Model.Move.Move
 getMoveFromString acs str =
@@ -183,11 +163,11 @@ getInputPanelName str =
         len = String.split " " str |> List.length
     in
     case len of
-        2 -> Attribute
-        3 -> Amount
-        4 -> Before
-        5 -> After
-        6 -> Date
+        1 -> Attribute
+        2 -> Amount
+        3 -> Before
+        4 -> After
+        5 -> Date
         _ -> None
 
 postMove : Model.Move.Move -> Cmd Msg

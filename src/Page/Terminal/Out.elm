@@ -35,8 +35,8 @@ type Panel
     | Date
     | None
 
-init : Model.Attribute.AttributesCollection -> String -> ( Model, Cmd Msg )
-init asc str = ( Model asc str "", Cmd.none )
+init : Model.Attribute.AttributesCollection -> ( Model, Cmd Msg )
+init asc = ( Model asc "" "", Cmd.none )
 
 type Msg
     = Send
@@ -62,7 +62,7 @@ update msg model =
             ( { model | input = displayString }, Cmd.none )
         Send ->
             let
-                balance = String.split " " model.input |> List.tail |> Maybe.withDefault [] |> String.join " " |> getBalanceFromString model.asc
+                balance = getBalanceFromString model.asc model.input
                 cmd = postBalance balance
             in
             ( model, cmd )
@@ -83,7 +83,7 @@ view model =
         acs = model.asc
         strd = model.input
         str = String.split "." strd |> List.head |> Maybe.withDefault ""
-        balance = String.split " " str |> List.tail |> Maybe.withDefault [] |> String.join " " |> getBalanceFromString acs
+        balance = getBalanceFromString acs str
         panel = getInputPanelName str
         last = String.split " " str |> List.reverse |> List.head |> Maybe.withDefault ""
     in
@@ -172,10 +172,10 @@ getInputPanelName str =
         len = String.split " " str |> List.length
     in
     case len of
-        2 -> Amount
-        3 -> Item
-        4 -> Kind
-        5 -> Purpose
-        6 -> Place
-        7 -> Date
+        1 -> Amount
+        2 -> Item
+        3 -> Kind
+        4 -> Purpose
+        5 -> Place
+        6 -> Date
         _ -> None
