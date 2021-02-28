@@ -24,7 +24,6 @@ import Request.Util
 type alias Model =
     { command : Command
     , asc : Model.Attribute.AttributesCollection
-    , input : String
     , error : String
     }
 
@@ -41,7 +40,7 @@ type Command
 
 init : ( Model, Cmd Msg )
 init = 
-    ( Model None Model.Attribute.initAttributesCollection "" ""
+    ( Model None Model.Attribute.initAttributesCollection ""
     , Cmd.batch
         [ getAttributeElements "kind"
         , getAttributeElements "purpose"
@@ -50,8 +49,7 @@ init =
     )
 
 type Msg
-    = Send
-    | ChangeCommand String
+    = ChangeCommand String
     | GetAttributeElements String (Result Http.Error GetAttributeElementsResponse)
     | Receive (Result Http.Error String)
     | OutMsg Page.Terminal.Out.Msg
@@ -66,24 +64,21 @@ update msg model =
                     let
                         ( outModel, _ ) = Page.Terminal.Out.init model.asc
                     in
-                    ( { model | command = Out outModel, input = str }, Cmd.none )
+                    ( { model | command = Out outModel }, Cmd.none )
                 "move" ->
                     let
                         ( moveModel, _ ) = Page.Terminal.Move.init model.asc
                     in
-                    ( { model | command = Move moveModel, input = str }, Cmd.none )
+                    ( { model | command = Move moveModel }, Cmd.none )
                 _ ->
-                    ( { model | input = str }, Cmd.none )
-        Send ->
-            ( model, Cmd.none )
+                    ( model , Cmd.none )
         GetAttributeElements attibuteName result ->
                 case result of
                     Ok response ->
                         case response.status of
                             "OK" ->
                                 ( { model 
-                                    | input = ""
-                                    , error = ""
+                                    | error = ""
                                     , asc = getAttributesCollectionUpdatedAttributeElements
                                         model.asc
                                         attibuteName
