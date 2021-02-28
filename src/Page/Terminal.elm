@@ -1,8 +1,8 @@
 module Page.Terminal exposing (Model, Msg, init, update, view)
 
 import Html exposing (..)
-import Html.Attributes
-import Html.Events
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Http 
 import Json.Encode
 import Json.Decode
@@ -51,7 +51,7 @@ init =
 
 type Msg
     = Send
-    | Input String
+    | ChangeCommand String
     | GetAttributeElements String (Result Http.Error GetAttributeElementsResponse)
     | Receive (Result Http.Error String)
     | OutMsg Page.Terminal.Out.Msg
@@ -60,11 +60,8 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = 
     case msg of
-        Input str ->
-            let
-                command = str |> String.split " " |> List.head |> Maybe.withDefault ""
-            in
-            case command of
+        ChangeCommand str ->
+            case str of
                 "out" ->
                     let
                         ( outModel, _ ) = Page.Terminal.Out.init model.asc str
@@ -128,22 +125,27 @@ view : Model -> Html Msg
 view model =
     div []
         [ br [] []
+        , input
+            [ id "out"
+            , name "command"
+            , type_ "radio"
+            , value "out"
+            , onChange ChangeCommand
+            ] []
+        , label [ for "out" ] [ text "Out" ]
+        , input
+            [ id "move"
+            , name "command"
+            , type_ "radio"
+            , value "move"
+            , onChange ChangeCommand
+            ] []
+        , label [ for "move" ] [ text "Move" ]
         , div []
             [
                 case model.command of
                     None ->
-                        div []
-                            [ Html.form 
-                                [ Html.Events.onSubmit Send ]
-                                [ input 
-                                    [ Html.Attributes.value <| model.input, Html.Events.onInput Input, Html.Attributes.autofocus True ]
-                                    []
-                                , button
-                                    []
-                                    [ text "Submit" ]
-                                ]
-                            , Html.text "none"
-                            ]
+                        div [] []
                     Out model_ ->
                         Page.Terminal.Out.view model_ |> Html.map OutMsg
                     Move model_ ->
@@ -195,3 +197,7 @@ getAttributesCollectionUpdatedAttributeElements asc attributeName attributeEleme
         _ ->
             asc
 
+
+onChange : (String -> msg) -> Html.Attribute msg
+onChange tagger =
+  on "change" (Json.Decode.map tagger Html.Events.targetValue)
