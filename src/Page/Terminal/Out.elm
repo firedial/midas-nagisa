@@ -24,6 +24,7 @@ type alias Model =
     { asc : Model.Attribute.AttributesCollection
     , input : String
     , error : String
+    , authToken : String
     }
 
 type Panel
@@ -35,8 +36,8 @@ type Panel
     | Date
     | None
 
-init : Model.Attribute.AttributesCollection -> ( Model, Cmd Msg )
-init asc = ( Model asc "" "", Cmd.none )
+init : String -> Model.Attribute.AttributesCollection -> ( Model, Cmd Msg )
+init authToken asc = ( Model asc "" "" authToken, Cmd.none )
 
 type Msg
     = Send
@@ -63,7 +64,7 @@ update msg model =
         Send ->
             let
                 balance = getBalanceFromString model.asc model.input
-                cmd = postBalance balance
+                cmd = postBalance model.authToken balance
             in
             ( model, cmd )
         Receive result ->
@@ -113,11 +114,11 @@ view model =
         ]
 
 
-postBalance : Model.Balance.Balance -> Cmd Msg
-postBalance balance =
+postBalance : String -> Model.Balance.Balance -> Cmd Msg
+postBalance authToken balance =
     Http.request
         { method = "POST"
-        , headers = []
+        , headers = [ Http.header "Authorization" ( "Bearer " ++ authToken ) ]
         , url = Config.Env.getApiUrl ++ "/balance/"
         , body = Model.Balance.encodeBalance balance |> Http.jsonBody
         , expect = Http.expectJson Receive decodeUpdateResponse

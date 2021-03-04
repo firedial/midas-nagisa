@@ -12,7 +12,7 @@ import Url.Builder
 import Page.Top
 import Page.Terminal
 
-main : Program () Model Msg
+main : Program String Model Msg
 main =
     Browser.application
     { init = init
@@ -26,6 +26,7 @@ main =
 type alias Model =
     { key : Nav.Key
     , page : Page
+    , authToken: String
     }
 
 type Page
@@ -33,9 +34,9 @@ type Page
     | Top Page.Top.Model
     | Terminal Page.Terminal.Model
 
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init : String -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    Model key ( Top ( Page.Top.Model "aaa" 1 ) )
+    Model key ( Top ( Page.Top.Model "aaa" 1 ) ) flags
     |> goTo (Route.parse url)
 
 type Msg
@@ -108,7 +109,7 @@ goTo maybeRoute model =
         Just Route.Terminal ->
             let
                 ( terminalModel, terminalCmd ) =
-                    Page.Terminal.init 
+                    Page.Terminal.init model.authToken
             in
             ( { model | page = Terminal terminalModel }
             , Cmd.map TerminalMsg terminalCmd

@@ -25,6 +25,7 @@ type alias Model =
     { asc : Model.Attribute.AttributesCollection
     , input : String
     , error : String
+    , authToken : String
     }
 
 type Panel
@@ -35,8 +36,8 @@ type Panel
     | Date
     | None
 
-init : Model.Attribute.AttributesCollection -> ( Model, Cmd Msg )
-init asc = ( Model asc "" "", Cmd.none )
+init : String -> Model.Attribute.AttributesCollection -> ( Model, Cmd Msg )
+init authToken asc = ( Model asc "" "" authToken, Cmd.none )
 
 type Msg
     = Send
@@ -68,7 +69,7 @@ update msg model =
         Send ->
             let
                 move = getMoveFromString model.asc model.input
-                cmd = postMove move
+                cmd = postMove model.authToken move
             in
             ( model, cmd )
         Receive result ->
@@ -170,11 +171,11 @@ getInputPanelName str =
         5 -> Date
         _ -> None
 
-postMove : Model.Move.Move -> Cmd Msg
-postMove move =
+postMove : String -> Model.Move.Move -> Cmd Msg
+postMove authToken move =
     Http.request
         { method = "POST"
-        , headers = []
+        , headers = [ Http.header "Authorization" ( "Bearer " ++ authToken ) ]
         , url = Config.Env.getApiUrl ++ "/move/"
         , body = Model.Move.encodeMove move |> Http.jsonBody
         , expect = Http.expectJson Receive decodeUpdateResponse

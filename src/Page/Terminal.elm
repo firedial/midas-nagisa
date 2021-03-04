@@ -25,6 +25,7 @@ type alias Model =
     { command : Command
     , asc : Model.Attribute.AttributesCollection
     , error : String
+    , authToken : String
     }
 
 type alias GetAttributeElementsResponse =
@@ -38,13 +39,13 @@ type Command
     | Out Page.Terminal.Out.Model
     | Move Page.Terminal.Move.Model
 
-init : ( Model, Cmd Msg )
-init = 
-    ( Model None Model.Attribute.initAttributesCollection ""
+init : String -> ( Model, Cmd Msg )
+init authToken = 
+    ( Model None Model.Attribute.initAttributesCollection "" authToken
     , Cmd.batch
-        [ getAttributeElements "kind"
-        , getAttributeElements "purpose"
-        , getAttributeElements "place"
+        [ getAttributeElements authToken "kind"
+        , getAttributeElements authToken "purpose"
+        , getAttributeElements authToken "place"
         ]
     )
 
@@ -62,12 +63,12 @@ update msg model =
             case str of
                 "out" ->
                     let
-                        ( outModel, _ ) = Page.Terminal.Out.init model.asc
+                        ( outModel, _ ) = Page.Terminal.Out.init model.authToken model.asc
                     in
                     ( { model | command = Out outModel }, Cmd.none )
                 "move" ->
                     let
-                        ( moveModel, _ ) = Page.Terminal.Move.init model.asc
+                        ( moveModel, _ ) = Page.Terminal.Move.init model.authToken model.asc
                     in
                     ( { model | command = Move moveModel }, Cmd.none )
                 _ ->
@@ -149,11 +150,11 @@ view model =
         ]
 
 
-getAttributeElements : String -> Cmd Msg
-getAttributeElements attribute =
+getAttributeElements : String -> String -> Cmd Msg
+getAttributeElements authToken attribute =
     Http.request
         { method = "GET"
-        , headers = [ Http.header "Authorization" ( "Bearer " ++ "token" ) ]
+        , headers = [ Http.header "Authorization" ( "Bearer " ++ authToken ) ]
         , url = Config.Env.getApiUrl ++ "/" ++ attribute ++ "_elements/"
         , body = Http.emptyBody
         , expect = Http.expectJson (GetAttributeElements attribute) decodeAttributeElementsResoponse
